@@ -1,0 +1,111 @@
+/* Russian Localizations for Alias Game */
+
+// MARK: - Common
+"common.cancel" = "Отмена";
+"common.save" = "Сохранить";
+"common.continue" = "Продолжить";
+"common.exit" = "Выход";
+"common.home" = "Домой";
+"common.again" = "Снова";
+
+// MARK: - Home Screen
+"home.new_game" = "Новая игра";
+"home.settings" = "настройки";
+"home.accessibility.start_game" = "Начать новую игру";
+"home.accessibility.open_settings" = "Открыть настройки";
+
+// MARK: - New Game Screen
+"new_game.title" = "Новая игра";
+"new_game.start_game" = "Начать игру";
+"new_game.add_player" = "добавить игрока";
+
+// MARK: - Players
+"player.edit.title" = "Редактировать игрока";
+"player.edit.name_label" = "Имя игрока";
+"player.edit.choose_icon" = "Выбрать иконку";
+"player.guesser" = "Отгадывающий";
+"player.explainer" = "Объясняющий";
+"player.default_name" = "Игрок %d";
+
+// MARK: - Dictionary
+"dictionary.easy" = "Легкий";
+"dictionary.medium" = "Средний";
+"dictionary.hard" = "Сложный";
+"dictionary.custom" = "Свой словарь";
+"dictionary.create.title" = "Создать словарь ИИ";
+"dictionary.create.instruction" = "Опишите тему для вашего пользовательского словаря.";
+"dictionary.create.generating" = "Генерация слов...";
+"dictionary.create.example" = "(например, \"Известные фразы из Теории большого взрыва\")";
+"dictionary.create.generate" = "Генерировать";
+"dictionary.create.words" = "слов";
+"dictionary.create.failed" = "Не удалось сгенерировать";
+
+// MARK: - Settings
+"settings.language" = "Язык";
+"settings.sound" = "Звук";
+"settings.vibration" = "Вибрация";
+"settings.openrouter" = "OpenRouter";
+"settings.openrouter_api_key" = "Ключ API OpenRouter";
+"settings.openrouter_api_key_placeholder" = "Ключ API";
+"settings.openrouter_model" = "Модель OpenRouter";
+"settings.openrouter_model_placeholder" = "Модель, например google/gemini-3.1-flash-lite";
+"settings.openrouter_help" = "Используется только для генерации словарей ИИ. Ключ сохраняется в Keychain на этом устройстве.";
+"settings.round_time" = "Время раунда";
+"settings.points_to_win" = "Очков для победы";
+"settings.points_for_guessed" = "Очков за угаданное слово";
+"settings.penalty_for_skipped" = "Штраф за пропущенное слово";
+"settings.last_word_bonus" = "Бонус за последнее слово";
+"settings.bonus_points" = "Бонусные очки:";
+"settings.bonus" = "бонус";
+
+// MARK: - Turn Start Confirm Screen
+"turn_start.lets_go" = "Поехали!";
+"turn_start.how_to_play" = "Как играть";
+"turn_start.instruction_1" = "Объясняющий описывает слово, не произнося его";
+"turn_start.instruction_2" = "Отгадывающий пытается угадать слово";
+"turn_start.instruction_3" = "Смахните вправо/вверх, если угадали, влево/вниз, чтобы пропустить";
+"turn_start.instruction_4" = "Наберите как можно больше очков до истечения времени";
+"turn_start.round" = "Раунд";
+"turn_start.turn_of" = "Ход %d из %d";
+
+// MARK: - Gameplay Screen
+"gameplay.bonus_time" = "БОНУСНОЕ ВРЕМЯ!";
+"gameplay.swipe_up_guessed" = "Вверх, если угадали";
+"gameplay.swipe_down_skipped" = "Вниз, если пропустили";
+"gameplay.exit_title" = "Выйти из игры?";
+"gameplay.exit_message" = "Вы уверены, что хотите выйти? Ваш прогресс будет потерян.";
+"gameplay.last_word_bonus" = "Бонус за последнее слово!";
+"gameplay.who_gets_points" = "Кто получает +%d очков?";
+"gameplay.no_more_words" = "Слова закончились!";
+"gameplay.pool_exhausted" = "Словарь исчерпан. Ход сейчас завершится.";
+
+// MARK: - Turn Results Screen
+"turn_results.words" = "Слова";
+"turn_results.guessed_skipped" = "Угадано: %d, пропущено: %d";
+"turn_results.total_scores" = "Общий счёт игры";
+"turn_results.tap_to_reveal" = "Нажмите, чтобы показать";
+"turn_results.turn_of" = "Ход %d из %d";
+
+// MARK: - Winner Screen
+"winner.its_a_tie" = "Ничья!";
+"winner.wins" = "Победа!";
+"winner.final_scores" = "Финальный счёт";
+
+// MARK: - Time Units
+"time.seconds_short" = "с";
+"time.minutes_short" = "м";
+
+// MARK: - Roles
+"role.guesser" = "Отгадывающий";
+"role.explainer" = "Объясняющий";
+
+// MARK: - Points
+"points.plus" = "+%d";
+"points.minus" = "-%d";
+
+// MARK: - Accessibility
+"accessibility.close" = "Закрыть";
+"accessibility.back" = "Назад";
+"accessibility.next" = "Далее";
+"accessibility.play" = "Играть";
+"accessibility.pause" = "Пауза";

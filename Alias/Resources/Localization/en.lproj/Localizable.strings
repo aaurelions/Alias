@@ -1,0 +1,111 @@
+/* English Localizations for Alias Game */
+
+// MARK: - Common
+"common.cancel" = "Cancel";
+"common.save" = "Save";
+"common.continue" = "Continue";
+"common.exit" = "Exit";
+"common.home" = "Home";
+"common.again" = "Again";
+
+// MARK: - Home Screen
+"home.new_game" = "New Game";
+"home.settings" = "settings";
+"home.accessibility.start_game" = "Start a New Game";
+"home.accessibility.open_settings" = "Open Settings";
+
+// MARK: - New Game Screen
+"new_game.title" = "New Game";
+"new_game.start_game" = "Start Game";
+"new_game.add_player" = "add new player";
+
+// MARK: - Players
+"player.edit.title" = "Edit Player";
+"player.edit.name_label" = "Player Name";
+"player.edit.choose_icon" = "Choose Icon";
+"player.guesser" = "Guesser";
+"player.explainer" = "Explainer";
+"player.default_name" = "Player %d";
+
+// MARK: - Dictionary
+"dictionary.easy" = "Easy";
+"dictionary.medium" = "Medium";
+"dictionary.hard" = "Hard";
+"dictionary.custom" = "Custom Dictionary";
+"dictionary.create.title" = "Create AI Dictionary";
+"dictionary.create.instruction" = "Describe the theme for your custom dictionary.";
+"dictionary.create.generating" = "Generating words...";
+"dictionary.create.example" = "(e.g., \"Famous phrases from The Big Bang Theory\")";
+"dictionary.create.generate" = "Generate";
+"dictionary.create.words" = "words";
+"dictionary.create.failed" = "Generation failed";
+
+// MARK: - Settings
+"settings.language" = "Language";
+"settings.sound" = "Sound";
+"settings.vibration" = "Vibration";
+"settings.openrouter" = "OpenRouter";
+"settings.openrouter_api_key" = "OpenRouter API Key";
+"settings.openrouter_api_key_placeholder" = "API key";
+"settings.openrouter_model" = "OpenRouter Model";
+"settings.openrouter_model_placeholder" = "Model, e.g. google/gemini-3.1-flash-lite";
+"settings.openrouter_help" = "Used only for AI dictionary generation. The key is saved in Keychain on this device.";
+"settings.round_time" = "Round Time";
+"settings.points_to_win" = "Points to Win";
+"settings.points_for_guessed" = "Points for Guessed Word";
+"settings.penalty_for_skipped" = "Penalty for Skipped Word";
+"settings.last_word_bonus" = "Last Word Bonus";
+"settings.bonus_points" = "Bonus points:";
+"settings.bonus" = "bonus";
+
+// MARK: - Turn Start Confirm Screen
+"turn_start.lets_go" = "Let's go!";
+"turn_start.how_to_play" = "How to Play";
+"turn_start.instruction_1" = "The Explainer describes the word without saying it";
+"turn_start.instruction_2" = "The Guesser tries to guess the word";
+"turn_start.instruction_3" = "Swipe right/top if guessed correctly, left/bottom to skip";
+"turn_start.instruction_4" = "Get as many points as possible before time runs out";
+"turn_start.round" = "Round";
+"turn_start.turn_of" = "Turn %d/%d";
+
+// MARK: - Gameplay Screen
+"gameplay.bonus_time" = "BONUS TIME!";
+"gameplay.swipe_up_guessed" = "Swipe up if guessed";
+"gameplay.swipe_down_skipped" = "Swipe down if skipped";
+"gameplay.exit_title" = "Exit Game?";
+"gameplay.exit_message" = "Are you sure you want to quit? Your progress will be lost.";
+"gameplay.last_word_bonus" = "Last Word Bonus!";
+"gameplay.who_gets_points" = "Who gets +%d points?";
+"gameplay.no_more_words" = "No More Words!";
+"gameplay.pool_exhausted" = "The word pool has been exhausted. The turn will end now.";
+
+// MARK: - Turn Results Screen
+"turn_results.words" = "Words";
+"turn_results.guessed_skipped" = "%d guessed, %d skipped";
+"turn_results.total_scores" = "Total Game Scores";
+"turn_results.tap_to_reveal" = "Tap to reveal";
+"turn_results.turn_of" = "Turn %d/%d";
+
+// MARK: - Winner Screen
+"winner.its_a_tie" = "It's a Tie!";
+"winner.wins" = "Wins!";
+"winner.final_scores" = "Final Scores";
+
+// MARK: - Time Units
+"time.seconds_short" = "s";
+"time.minutes_short" = "m";
+
+// MARK: - Roles
+"role.guesser" = "Guesser";
+"role.explainer" = "Explainer";
+
+// MARK: - Points
+"points.plus" = "+%d";
+"points.minus" = "-%d";
+
+// MARK: - Accessibility
+"accessibility.close" = "Close";
+"accessibility.back" = "Back";
+"accessibility.next" = "Next";
+"accessibility.play" = "Play";
+"accessibility.pause" = "Pause";

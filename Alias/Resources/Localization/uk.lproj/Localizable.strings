@@ -1,0 +1,111 @@
+/* Ukrainian Localizations for Alias Game */
+
+// MARK: - Common
+"common.cancel" = "Скасувати";
+"common.save" = "Зберегти";
+"common.continue" = "Продовжити";
+"common.exit" = "Вихід";
+"common.home" = "Додому";
+"common.again" = "Знову";
+
+// MARK: - Home Screen
+"home.new_game" = "Нова гра";
+"home.settings" = "налаштування";
+"home.accessibility.start_game" = "Почати нову гру";
+"home.accessibility.open_settings" = "Відкрити налаштування";
+
+// MARK: - New Game Screen
+"new_game.title" = "Нова гра";
+"new_game.start_game" = "Почати гру";
+"new_game.add_player" = "додати гравця";
+
+// MARK: - Players
+"player.edit.title" = "Редагувати гравця";
+"player.edit.name_label" = "Ім'я гравця";
+"player.edit.choose_icon" = "Вибрати іконку";
+"player.guesser" = "Відгадувач";
+"player.explainer" = "Пояснювач";
+"player.default_name" = "Гравець %d";
+
+// MARK: - Dictionary
+"dictionary.easy" = "Легкий";
+"dictionary.medium" = "Середній";
+"dictionary.hard" = "Складний";
+"dictionary.custom" = "Власний словник";
+"dictionary.create.title" = "Створити словник ШІ";
+"dictionary.create.instruction" = "Опишіть тему для вашого власного словника.";
+"dictionary.create.generating" = "Генерація слів...";
+"dictionary.create.example" = "(наприклад, \"Відомі фрази з Теорії великого вибуху\")";
+"dictionary.create.generate" = "Генерувати";
+"dictionary.create.words" = "слів";
+"dictionary.create.failed" = "Не вдалося згенерувати";
+
+// MARK: - Settings
+"settings.language" = "Мова";
+"settings.sound" = "Звук";
+"settings.vibration" = "Вібрація";
+"settings.openrouter" = "OpenRouter";
+"settings.openrouter_api_key" = "Ключ API OpenRouter";
+"settings.openrouter_api_key_placeholder" = "Ключ API";
+"settings.openrouter_model" = "Модель OpenRouter";
+"settings.openrouter_model_placeholder" = "Модель, наприклад google/gemini-3.1-flash-lite";
+"settings.openrouter_help" = "Використовується лише для генерації словників ШІ. Ключ зберігається в Keychain на цьому пристрої.";
+"settings.round_time" = "Час раунду";
+"settings.points_to_win" = "Очок для перемоги";
+"settings.points_for_guessed" = "Очок за вгадане слово";
+"settings.penalty_for_skipped" = "Штраф за пропущене слово";
+"settings.last_word_bonus" = "Бонус за останнє слово";
+"settings.bonus_points" = "Бонусні очки:";
+"settings.bonus" = "бонус";
+
+// MARK: - Turn Start Confirm Screen
+"turn_start.lets_go" = "Поїхали!";
+"turn_start.how_to_play" = "Як грати";
+"turn_start.instruction_1" = "Пояснювач описує слово, не вимовляючи його";
+"turn_start.instruction_2" = "Відгадувач намагається вгадати слово";
+"turn_start.instruction_3" = "Змахніть праворуч/вгору, якщо вгадали, ліворуч/вниз, щоб пропустити";
+"turn_start.instruction_4" = "Наберіть якомога більше очок до закінчення часу";
+"turn_start.round" = "Раунд";
+"turn_start.turn_of" = "Хід %d з %d";
+
+// MARK: - Gameplay Screen
+"gameplay.bonus_time" = "БОНУСНИЙ ЧАС!";
+"gameplay.swipe_up_guessed" = "Вгору, якщо вгадали";
+"gameplay.swipe_down_skipped" = "Вниз, якщо пропустили";
+"gameplay.exit_title" = "Вийти з гри?";
+"gameplay.exit_message" = "Ви впевнені, що хочете вийти? Ваш прогрес буде втрачено.";
+"gameplay.last_word_bonus" = "Бонус за останнє слово!";
+"gameplay.who_gets_points" = "Хто отримує +%d очок?";
+"gameplay.no_more_words" = "Слова закінчилися!";
+"gameplay.pool_exhausted" = "Словник вичерпано. Хід зараз завершиться.";
+
+// MARK: - Turn Results Screen
+"turn_results.words" = "Слова";
+"turn_results.guessed_skipped" = "Вгадано: %d, пропущено: %d";
+"turn_results.total_scores" = "Загальний рахунок гри";
+"turn_results.tap_to_reveal" = "Натисніть, щоб показати";
+"turn_results.turn_of" = "Хід %d з %d";
+
+// MARK: - Winner Screen
+"winner.its_a_tie" = "Нічия!";
+"winner.wins" = "Перемога!";
+"winner.final_scores" = "Фінальний рахунок";
+
+// MARK: - Time Units
+"time.seconds_short" = "с";
+"time.minutes_short" = "хв";
+
+// MARK: - Roles
+"role.guesser" = "Відгадувач";
+"role.explainer" = "Пояснювач";
+
+// MARK: - Points
+"points.plus" = "+%d";
+"points.minus" = "-%d";
+
+// MARK: - Accessibility
+"accessibility.close" = "Закрити";
+"accessibility.back" = "Назад";
+"accessibility.next" = "Далі";
+"accessibility.play" = "Грати";
+"accessibility.pause" = "Пауза";
