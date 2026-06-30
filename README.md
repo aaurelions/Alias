@@ -4,7 +4,7 @@ Alias is a SwiftUI party word game for iPhone and iPad. Players take turns expla
 
 ## Screenshots
 
-| Home | New Game | Gameplay | Results |
+| Home | New Game | Turn Start | Gameplay |
 | --- | --- | --- | --- |
 | <img src="docs/screenshots/1.PNG" width="180" alt="Alias home screen"> | <img src="docs/screenshots/2.PNG" width="180" alt="Alias new game screen"> | <img src="docs/screenshots/3.PNG" width="180" alt="Alias gameplay screen"> | <img src="docs/screenshots/4.PNG" width="180" alt="Alias results screen"> |
 
