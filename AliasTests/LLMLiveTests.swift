@@ -2,25 +2,26 @@
 import Foundation
 import Testing
 
-/// Calls the real OpenRouter API. Runs only when `OPENROUTER_API_KEY` is set for the test runner,
-/// e.g. `TEST_RUNNER_OPENROUTER_API_KEY=… xcodebuild test …`.
-@MainActor
-@Suite(.enabled(if: ProcessInfo.processInfo.environment["OPENROUTER_API_KEY"]?.isEmpty == false), .timeLimit(.minutes(3)))
-struct OpenRouterLiveTests {
-    private var configuration: OpenRouterConfiguration {
-        let environment = ProcessInfo.processInfo.environment
-        return OpenRouterConfiguration(
-            apiKey: environment["OPENROUTER_API_KEY"] ?? "",
-            model: environment["OPENROUTER_MODEL"].flatMap { $0.isEmpty ? nil : $0 } ?? AppSettings.defaultOpenRouterModel
-        )
-    }
+/// Calls a real OpenAI-compatible API. Runs only when `OPENAI_BASE_URL`, `OPENAI_API_KEY` and `OPENAI_MODEL`
+/// are passed to the test runner, e.g. `TEST_RUNNER_OPENAI_API_KEY=… xcodebuild test …`.
+private nonisolated var liveConfiguration: LLMConfiguration {
+    let environment = ProcessInfo.processInfo.environment
+    return LLMConfiguration(
+        baseURL: environment[AppSettings.EnvironmentKey.baseURL] ?? "",
+        apiKey: environment[AppSettings.EnvironmentKey.apiKey] ?? "",
+        model: environment[AppSettings.EnvironmentKey.model] ?? ""
+    )
+}
 
+@MainActor
+@Suite(.enabled(if: liveConfiguration.issues.isEmpty), .timeLimit(.minutes(3)))
+struct LLMLiveTests {
     @Test(arguments: ["Космос і астрономія", "Kitchen and cooking"])
     func generatesPlayableDictionary(topic: String) async throws {
         let target = DictionaryGenerator.targetWordCount(playerCount: 3)
         var progress: [Int] = []
 
-        let dictionary = try await DictionaryGenerator().generate(topic: topic, wordCount: target, configuration: configuration) {
+        let dictionary = try await DictionaryGenerator().generate(topic: topic, wordCount: target, configuration: liveConfiguration) {
             progress.append($0)
         }
 

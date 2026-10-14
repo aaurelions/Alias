@@ -10,14 +10,6 @@ enum Difficulty: CaseIterable, Sendable {
         case .hard: "🔴"
         }
     }
-
-    var localizedName: String {
-        switch self {
-        case .easy: L.Dictionary.easy
-        case .medium: L.Dictionary.medium
-        case .hard: L.Dictionary.hard
-        }
-    }
 }
 
 struct WordDictionary: Identifiable, Sendable {
@@ -38,7 +30,7 @@ struct WordDictionary: Identifiable, Sendable {
     static func builtIn(_ difficulty: Difficulty, language: Language) -> WordDictionary {
         WordDictionary(
             emoji: difficulty.emoji,
-            name: difficulty.localizedName,
+            name: L.Dictionary.builtInName(difficulty, in: language),
             words: BuiltInWords.words(for: difficulty, language: language)
         )
     }

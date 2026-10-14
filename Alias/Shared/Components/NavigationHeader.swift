@@ -33,6 +33,7 @@ struct NavigationHeader: View {
                         .font(Theme.Typography.logo(size: 32))
                         .foregroundStyle(Theme.current.textPrimary)
                         .opacity(titleOpacity)
+                        .accessibilityAddTraits(.isHeader)
 
                     if showUnderline {
                         HeaderUnderline()
@@ -50,27 +51,27 @@ struct NavigationHeader: View {
 /// Defines an action that can be placed in a header
 struct HeaderAction {
     let icon: String
+    let accessibilityLabel: String
     let action: () -> Void
-    var accessibilityLabel: String?
 
-    init(icon: String, accessibilityLabel: String? = nil, action: @escaping () -> Void) {
+    init(icon: String, accessibilityLabel: String, action: @escaping () -> Void) {
         self.icon = icon
         self.accessibilityLabel = accessibilityLabel
         self.action = action
     }
 
     static func back(action: @escaping () -> Void) -> HeaderAction {
-        HeaderAction(icon: "chevron.left", accessibilityLabel: "Go Back", action: action)
+        HeaderAction(icon: "chevron.left", accessibilityLabel: L.back, action: action)
     }
 
     static func close(action: @escaping () -> Void) -> HeaderAction {
-        HeaderAction(icon: "xmark", accessibilityLabel: "Close", action: action)
+        HeaderAction(icon: "xmark", accessibilityLabel: L.close, action: action)
     }
 
     static func settings(isExpanded: Bool, action: @escaping () -> Void) -> HeaderAction {
         HeaderAction(
             icon: isExpanded ? "gear.badge.checkmark" : "gear",
-            accessibilityLabel: isExpanded ? "Close Settings" : "Open Settings",
+            accessibilityLabel: isExpanded ? L.Accessibility.closeGameSettings : L.Accessibility.openGameSettings,
             action: action
         )
     }
@@ -85,24 +86,16 @@ struct HeaderAction {
 /// Renders a header action as a button
 private struct HeaderActionButton: View {
     let action: HeaderAction
-    @State private var isPressed = false
 
     var body: some View {
         Button(action: action.action) {
             Image(systemName: action.icon)
                 .font(.system(size: 32, weight: .semibold))
                 .foregroundStyle(Theme.current.textPrimary.opacity(0.4))
-                .scaleEffect(isPressed ? 1.1 : 1.0)
         }
-        .buttonStyle(.plain)
+        .buttonStyle(PressScaleButtonStyle())
         .padding(.bottom, 10)
-        .accessibilityLabel(action.accessibilityLabel ?? "")
-        .simultaneousGesture(
-            DragGesture(minimumDistance: 0)
-                .onChanged { _ in isPressed = true }
-                .onEnded { _ in isPressed = false }
-        )
-        .animation(.spring(response: 0.3, dampingFraction: 0.7), value: isPressed)
+        .accessibilityLabel(action.accessibilityLabel)
     }
 }
 
@@ -177,8 +170,8 @@ struct HeaderUnderline: View {
     VStack(spacing: 0) {
         NavigationHeader(
             title: "Edit Profile",
-            leftAction: HeaderAction(icon: "xmark", action: {}),
-            rightAction: HeaderAction(icon: "checkmark", action: {})
+            leftAction: .close {},
+            rightAction: .custom(icon: "checkmark", accessibilityLabel: "Save") {}
         )
         Spacer()
     }

@@ -83,7 +83,7 @@ private struct WordCountPill: View {
     let isSelected: Bool
 
     var body: some View {
-        Text("\(wordCount)")
+        Text(wordCount, format: .number)
             .font(Theme.Typography.bodySmall(size: 12))
             .foregroundStyle(Theme.current.textPrimary)
             .padding(.horizontal, 8)
@@ -134,5 +134,5 @@ private struct DictionaryCardBackground: View {
         GeneratedDictionaryCard(dictionary: generated, isSelected: selectedID == generated.id) { selectedID = generated.id }
     }
     .padding()
-    .background(DarkBackgroundView(backgroundImage: "NewGameScreenBg"))
+    .screenBackground(.newGameScreenBg)
 }

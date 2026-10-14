@@ -1,91 +1,103 @@
 import SwiftUI
 
-// MARK: - Row Title
-
-struct RowTitle: View {
-    let icon: String
-    let color: Color
-    let text: String
-
-    var body: some View {
-        HStack(spacing: 8) {
-            Image(systemName: icon)
-                .font(.system(size: 18))
-                .foregroundStyle(color.opacity(0.8))
-            Text(text)
-                .font(Theme.Typography.heading2(size: 18))
-                .foregroundStyle(Theme.current.textSecondary)
-        }
-    }
-}
-
 // MARK: - Options Row
 
-/// Horizontal row of options that fills the entire width
-struct OptionsRow: View {
-    let options: [String]
-    let isSelected: (String) -> Bool
-    let onTap: (String) -> Void
+/// A full-width row of mutually exclusive options.
+struct OptionsRow<Value: Hashable>: View {
+    let options: [Value]
+    @Binding var selection: Value
+    let label: (Value) -> String
 
     var body: some View {
         HStack(spacing: 12) {
             ForEach(options, id: \.self) { option in
-                OptionButton(
-                    option: option,
-                    selected: isSelected(option),
-                    action: { onTap(option) }
-                )
+                OptionButton(option: label(option), selected: selection == option) {
+                    withAnimation(.spring(response: 0.2, dampingFraction: 0.8)) {
+                        selection = option
+                    }
+                }
+                .accessibilityAddTraits(selection == option ? .isSelected : [])
             }
         }
         .frame(maxWidth: .infinity)
     }
 }
 
+// MARK: - Value Stepper
+
+/// Minus / value / plus control clamped to `bounds`, exposed to VoiceOver as one adjustable element.
+struct ValueStepper: View {
+    let title: String
+    @Binding var value: Int
+    let bounds: ClosedRange<Int>
+    let caption: String
+    var showsPlusSign = true
+
+    private var formattedValue: String {
+        showsPlusSign ? "+\(value)" : "\(value)"
+    }
+
+    var body: some View {
+        HStack(spacing: 16) {
+            DecrementButton { adjust(by: -1) }
+                .disabled(value <= bounds.lowerBound)
+
+            VStack(spacing: 4) {
+                Text(verbatim: formattedValue)
+                    .font(Theme.Typography.body(size: 18))
+                    .foregroundStyle(Theme.current.textPrimary)
+                    .monospacedDigit()
+                    .frame(width: 50)
+
+                Text(caption)
+                    .font(Theme.Typography.bodySmall(size: 10))
+                    .foregroundStyle(Theme.current.textSecondary)
+            }
+
+            IncrementButton { adjust(by: 1) }
+                .disabled(value >= bounds.upperBound)
+        }
+        .accessibilityElement(children: .ignore)
+        .accessibilityLabel(title)
+        .accessibilityValue("\(formattedValue) \(caption)")
+        .accessibilityAdjustableAction { direction in
+            switch direction {
+            case .increment: adjust(by: 1)
+            case .decrement: adjust(by: -1)
+            @unknown default: break
+            }
+        }
+    }
+
+    private func adjust(by delta: Int) {
+        withAnimation(.spring(response: 0.1, dampingFraction: 0.9)) {
+            value = min(max(value + delta, bounds.lowerBound), bounds.upperBound)
+        }
+    }
+}
+
 // MARK: - Adjustable Value Column
 
+/// A captioned stepper for one role (guesser or explainer).
 struct AdjustableValueColumn: View {
     let title: String
     @Binding var value: Int
-    let positiveStyle: Bool
+    let isPenalty: Bool
 
     var body: some View {
         VStack(alignment: .center, spacing: 12) {
             Text(title)
                 .font(Theme.Typography.body(size: 14))
                 .foregroundStyle(Theme.current.textSecondary)
+                .accessibilityHidden(true)
 
-            HStack(spacing: 16) {
-                DecrementButton(
-                    action: {
-                        withAnimation(.spring(response: 0.1, dampingFraction: 0.9)) {
-                            if positiveStyle {
-                                value = max(0, value - 1)
-                            } else {
-                                value -= 1
-                            }
-                        }
-                    }
-                )
-
-                VStack(spacing: 4) {
-                    Text(positiveStyle ? "+\(value)" : "\(value)")
-                        .font(Theme.Typography.body(size: 18))
-                        .foregroundStyle(Theme.current.textPrimary)
-                        .frame(width: 50)
-
-                    Text(positiveStyle ? "points" : "penalty")
-                        .font(Theme.Typography.bodySmall(size: 10))
-                        .foregroundStyle(Theme.current.textSecondary)
-                }
-
-                IncrementButton(
-                    action: {
-                        withAnimation(.spring(response: 0.1, dampingFraction: 0.9)) {
-                            value += 1
-                        }
-                    }
-                )
-            }
+            ValueStepper(
+                title: title,
+                value: $value,
+                bounds: isPenalty ? -GameSettings.maximumPoints ... 0 : 0 ... GameSettings.maximumPoints,
+                caption: isPenalty ? L.Settings.penaltyUnit : L.Settings.pointsUnit,
+                showsPlusSign: !isPenalty
+            )
         }
         .frame(maxWidth: .infinity)
     }

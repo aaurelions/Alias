@@ -9,81 +9,67 @@ struct NewGameScreen: View {
     var body: some View {
         @Bindable var model = model
 
-        ZStack {
-            VStack {
-                ScrollView {
-                    VStack(spacing: 0) {
-                        NavigationHeader(
-                            title: L.NewGame.title,
-                            leftAction: .back { router.back() },
-                            rightAction: .settings(isExpanded: model.isGameSettingsPresented) {
-                                withAnimation { model.isGameSettingsPresented.toggle() }
-                            }
-                        )
-                        .padding(.bottom, 15)
-
-                        PlayersSection(
-                            players: model.players,
-                            onAdd: { withAnimation(.spring()) { model.addPlayer() } },
-                            onDelete: { player in withAnimation(.spring()) { model.deletePlayer(player) } },
-                            onEdit: { model.playerBeingEdited = $0 }
-                        )
-                        .padding(.vertical, 15)
-
-                        BuiltInDictionaryGrid(
-                            dictionaries: model.builtInDictionaries,
-                            selectedID: model.selectedDictionaryID
-                        ) { dictionary in
-                            withAnimation(.spring(response: 0.3, dampingFraction: 0.7)) {
-                                model.selectBuiltInDictionary(dictionary)
-                            }
+        VStack {
+            ScrollView {
+                VStack(spacing: 0) {
+                    NavigationHeader(
+                        title: L.NewGame.title,
+                        leftAction: .back { router.back() },
+                        rightAction: .settings(isExpanded: model.isGameSettingsPresented) {
+                            model.isGameSettingsPresented.toggle()
                         }
-                        .padding(.vertical, 15)
+                    )
+                    .padding(.bottom, 15)
 
-                        GeneratedDictionaryCard(
-                            dictionary: model.generatedDictionary,
-                            isSelected: model.generatedDictionary.map { $0.id == model.selectedDictionaryID } ?? false
-                        ) {
-                            withAnimation(.spring()) { model.tapGeneratedDictionary() }
+                    PlayersSection(
+                        players: model.players,
+                        onAdd: { withAnimation(.spring()) { model.addPlayer() } },
+                        onDelete: { player in withAnimation(.spring()) { model.deletePlayer(player) } },
+                        onEdit: { model.playerBeingEdited = $0 }
+                    )
+                    .padding(.vertical, 15)
+
+                    BuiltInDictionaryGrid(
+                        dictionaries: model.builtInDictionaries,
+                        selectedID: model.selectedDictionaryID
+                    ) { dictionary in
+                        withAnimation(.spring(response: 0.3, dampingFraction: 0.7)) {
+                            model.selectBuiltInDictionary(dictionary)
                         }
-                        .padding(.vertical, 15)
                     }
-                    .padding(.horizontal)
+                    .padding(.vertical, 15)
+
+                    GeneratedDictionaryCard(
+                        dictionary: model.generatedDictionary,
+                        isSelected: model.generatedDictionary.map { $0.id == model.selectedDictionaryID } ?? false
+                    ) {
+                        withAnimation(.spring()) { model.tapGeneratedDictionary() }
+                    }
+                    .padding(.vertical, 15)
                 }
-                .scrollIndicators(.hidden)
-
-                RippleButton(title: L.NewGame.startGame, isEnabled: model.canStartGame, action: startGame)
-                    .padding()
-                    .frame(height: 80)
+                .padding(.horizontal)
             }
+            .scrollIndicators(.hidden)
 
-            if model.isGameSettingsPresented {
-                GameSettingsSheet(isPresented: $model.isGameSettingsPresented, settings: $model.settings)
-            }
+            RippleButton(title: L.NewGame.startGame, isEnabled: model.canStartGame, action: startGame)
+                .padding()
+                .frame(height: 80)
         }
-        .frame(maxWidth: .infinity, maxHeight: .infinity)
-        .background(DarkBackgroundView(backgroundImage: "NewGameScreenBg"))
+        .screenBackground(.newGameScreenBg)
         .toolbar(.hidden, for: .navigationBar)
-        .fullScreenCover(item: $model.playerBeingEdited) { player in
-            EditPlayerAlert(
-                player: player,
-                isPresented: Binding(
-                    get: { model.playerBeingEdited != nil },
-                    set: { if !$0 { model.playerBeingEdited = nil } }
-                )
-            ) { updated in
+        .sheet(isPresented: $model.isGameSettingsPresented) {
+            GameSettingsSheet(settings: $model.settings)
+        }
+        .sheet(item: $model.playerBeingEdited) { player in
+            EditPlayerSheet(player: player) { updated in
                 withAnimation { model.updatePlayer(updated) }
             }
         }
-        .fullScreenCover(isPresented: $model.isDictionaryGeneratorPresented, onDismiss: model.cancelGeneration) {
-            CreateDictionaryAlert(
-                isPresented: $model.isDictionaryGeneratorPresented,
-                state: model.generationState
-            ) { topic in
-                model.generateDictionary(topic: topic, configuration: appSettings.openRouterConfiguration)
+        .sheet(isPresented: $model.isDictionaryGeneratorPresented, onDismiss: model.cancelGeneration) {
+            CreateDictionarySheet(state: model.generationState) { topic in
+                model.generateDictionary(topic: topic, configuration: appSettings.llmConfiguration)
             }
         }
-        .ignoresSafeArea(.keyboard)
         .task { await revealInitialPlayers() }
     }
 

@@ -10,50 +10,51 @@ struct HomeScreen: View {
     private static let title = Array("Alias")
 
     var body: some View {
-        ZStack {
-            VStack {
-                HStack(spacing: 0) {
-                    ForEach(Self.title.indices, id: \.self) { index in
-                        OutlinedLetter(letter: Self.title[index])
-                            .rotationEffect(.degrees(2))
-                            .scaleEffect(x: 1, y: 2)
-                            .opacity(0.2)
-                    }
+        VStack {
+            HStack(spacing: 0) {
+                ForEach(Self.title.indices, id: \.self) { index in
+                    OutlinedLetter(letter: Self.title[index])
+                        .rotationEffect(.degrees(2))
+                        .scaleEffect(x: 1, y: 2)
+                        .opacity(0.2)
                 }
-                .rotationEffect(.degrees(2))
-                .padding(.top, 40)
+            }
+            .rotationEffect(.degrees(2))
+            .padding(.top, 40)
+            .accessibilityElement(children: .ignore)
+            .accessibilityLabel(Text(verbatim: "Alias"))
+            .accessibilityAddTraits(.isHeader)
 
-                Spacer()
+            Spacer()
 
-                newGameButton
+            newGameButton
 
-                Spacer()
+            Spacer()
 
-                Button {
-                    FeedbackService.shared.haptic(.light)
-                    withAnimation { isSettingsPresented = true }
-                } label: {
-                    Label {
-                        Text(L.Home.settings)
-                            .font(Theme.Typography.heading1(size: 24))
-                    } icon: {
-                        Image(systemName: "gearshape.fill")
-                            .font(.system(size: 38))
-                    }
-                    .opacity(0.3)
-                    .foregroundStyle(Theme.current.textSecondary)
+            Button {
+                FeedbackService.shared.haptic(.light)
+                isSettingsPresented = true
+            } label: {
+                Label {
+                    Text(L.Home.settings)
+                        .font(Theme.Typography.heading1(size: 24))
+                } icon: {
+                    Image(systemName: "gearshape.fill")
+                        .font(.system(size: 38))
                 }
-                .buttonStyle(.plain)
-                .accessibilityLabel(L.Home.Accessibility.openSettings)
+                .opacity(0.3)
+                .foregroundStyle(Theme.current.textSecondary)
             }
-            .padding(.horizontal, 40)
-            .background(DarkBackgroundView(backgroundImage: "HomeScreenBg"))
-
-            if isSettingsPresented {
-                AppSettingsSheet(isPresented: $isSettingsPresented)
-            }
+            .buttonStyle(.plain)
+            .accessibilityLabel(L.Home.Accessibility.openSettings)
         }
+        .padding(.horizontal, 40)
+        .frame(maxWidth: .infinity, maxHeight: .infinity)
+        .screenBackground(.homeScreenBg)
         .toolbar(.hidden, for: .navigationBar)
+        .sheet(isPresented: $isSettingsPresented) {
+            AppSettingsSheet()
+        }
         .onAppear {
             isRippling = false
             withAnimation(.easeInOut(duration: 3).repeatForever(autoreverses: true)) {

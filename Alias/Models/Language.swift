@@ -15,6 +15,13 @@ enum Language: String, CaseIterable, Identifiable, Sendable {
         }
     }
 
+    var locale: Locale { Locale(identifier: rawValue) }
+
+    /// The `.lproj` bundle holding this language's strings, falling back to the main bundle.
+    var bundle: Bundle {
+        Bundle.main.path(forResource: rawValue, ofType: "lproj").flatMap(Bundle.init(path:)) ?? .main
+    }
+
     var flag: String {
         switch self {
         case .english: "🇬🇧"

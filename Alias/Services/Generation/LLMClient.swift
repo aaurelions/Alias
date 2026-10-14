@@ -1,19 +1,44 @@
 import Foundation
 
-nonisolated struct OpenRouterConfiguration: Sendable {
+/// Connection settings for any OpenAI-compatible Chat Completions API
+/// (OpenAI, OpenRouter, Groq, Together, a local Ollama or LM Studio server, …).
+nonisolated struct LLMConfiguration: Sendable, Equatable {
+    /// API root such as `https://api.openai.com/v1`; a full `…/chat/completions` URL is accepted as well.
+    var baseURL: String
     var apiKey: String
     var model: String
-    var baseURL = URL(string: "https://openrouter.ai/api/v1")!
+
+    /// Problems that prevent a request, in the order a user should fix them; empty when ready.
+    var issues: [LLMError] {
+        var issues: [LLMError] = []
+        if baseURL.isEmpty { issues.append(.missingBaseURL) } else if endpoint == nil { issues.append(.invalidBaseURL) }
+        if apiKey.isEmpty { issues.append(.missingAPIKey) }
+        if model.isEmpty { issues.append(.missingModel) }
+        return issues
+    }
+
+    /// The `chat/completions` endpoint, or `nil` when `baseURL` is not an absolute http(s) URL.
+    var endpoint: URL? {
+        guard let url = URL(string: baseURL),
+              let scheme = url.scheme?.lowercased(), ["http", "https"].contains(scheme),
+              url.host()?.isEmpty == false
+        else { return nil }
+        return url.path().hasSuffix("chat/completions") ? url : url.appending(path: "chat/completions")
+    }
 }
 
-nonisolated enum OpenRouterError: Error, Equatable {
+nonisolated enum LLMError: Error, Equatable {
+    case missingBaseURL
+    case invalidBaseURL
     case missingAPIKey
+    case missingModel
     case requestFailed(statusCode: Int, message: String)
     case streamFailed(message: String)
     case invalidResponse
 }
 
-nonisolated struct OpenRouterClient: Sendable {
+/// Streams Chat Completions from an OpenAI-compatible server using server-sent events.
+nonisolated struct LLMClient: Sendable {
     private let session: URLSession
 
     init(session: URLSession = .shared) {
@@ -22,7 +47,7 @@ nonisolated struct OpenRouterClient: Sendable {
 
     func streamCompletion(
         _ body: ChatCompletionRequest,
-        configuration: OpenRouterConfiguration
+        configuration: LLMConfiguration
     ) -> AsyncThrowingStream<String, any Error> {
         AsyncThrowingStream { continuation in
             let task = Task {
@@ -40,27 +65,27 @@ nonisolated struct OpenRouterClient: Sendable {
     @concurrent
     private func stream(
         _ body: ChatCompletionRequest,
-        configuration: OpenRouterConfiguration,
+        configuration: LLMConfiguration,
         onContent: (String) -> Void
     ) async throws {
-        guard !configuration.apiKey.isEmpty else { throw OpenRouterError.missingAPIKey }
+        if let issue = configuration.issues.first { throw issue }
+        guard let endpoint = configuration.endpoint else { throw LLMError.invalidBaseURL }
 
-        var request = URLRequest(url: configuration.baseURL.appending(path: "chat/completions"))
+        var request = URLRequest(url: endpoint)
         request.httpMethod = "POST"
         request.timeoutInterval = 60
         request.setValue("Bearer \(configuration.apiKey)", forHTTPHeaderField: "Authorization")
         request.setValue("application/json", forHTTPHeaderField: "Content-Type")
         request.setValue("text/event-stream", forHTTPHeaderField: "Accept")
-        request.setValue("Alias", forHTTPHeaderField: "X-Title")
         request.httpBody = try JSONEncoder().encode(body)
 
         let (bytes, response) = try await session.bytes(for: request)
-        guard let httpResponse = response as? HTTPURLResponse else { throw OpenRouterError.invalidResponse }
+        guard let httpResponse = response as? HTTPURLResponse else { throw LLMError.invalidResponse }
 
         guard (200 ..< 300).contains(httpResponse.statusCode) else {
             var data = Data()
             for try await byte in bytes { data.append(byte) }
-            throw OpenRouterError.requestFailed(
+            throw LLMError.requestFailed(
                 statusCode: httpResponse.statusCode,
                 message: Self.errorMessage(from: data)
             )
@@ -73,10 +98,10 @@ nonisolated struct OpenRouterClient: Sendable {
             if payload == "[DONE]" { break }
 
             let chunk = try decoder.decode(StreamChunk.self, from: Data(payload.utf8))
-            if let error = chunk.error { throw OpenRouterError.streamFailed(message: error.message) }
+            if let error = chunk.error { throw LLMError.streamFailed(message: error.message) }
             for choice in chunk.choices {
                 if let content = choice.delta?.content, !content.isEmpty { onContent(content) }
-                if choice.finishReason == "error" { throw OpenRouterError.streamFailed(message: "") }
+                if choice.finishReason == "error" { throw LLMError.streamFailed(message: "") }
             }
         }
     }
@@ -113,21 +138,14 @@ nonisolated struct ChatCompletionRequest: Encodable, Sendable {
         }
     }
 
-    struct Reasoning: Encodable, Sendable {
-        let effort: String
-    }
-
     let model: String
     let messages: [Message]
     let responseFormat: ResponseFormat
-    let reasoning: Reasoning
-    let maxTokens: Int
     let stream = true
 
     enum CodingKeys: String, CodingKey {
-        case model, messages, reasoning, stream
+        case model, messages, stream
         case responseFormat = "response_format"
-        case maxTokens = "max_tokens"
     }
 }
 

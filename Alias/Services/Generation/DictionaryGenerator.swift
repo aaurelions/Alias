@@ -1,35 +1,19 @@
 import Foundation
 
-enum DictionaryGenerationError: LocalizedError, Equatable {
+/// Why a dictionary could not be generated. User-facing text lives in `L.Dictionary.Create.Failure`.
+nonisolated enum DictionaryGenerationError: Error, Equatable {
     case emptyTopic
     case tooFewWords(received: Int, required: Int)
-    case service(OpenRouterError)
-
-    var errorDescription: String? {
-        switch self {
-        case .emptyTopic:
-            L.Dictionary.Create.Failure.emptyTopic
-        case .tooFewWords(let received, let required):
-            L.Dictionary.Create.Failure.tooFewWords(received, required)
-        case .service(.missingAPIKey):
-            L.Dictionary.Create.Failure.missingAPIKey
-        case .service(.requestFailed(let statusCode, let message)):
-            L.Dictionary.Create.Failure.requestFailed(statusCode, message)
-        case .service(.streamFailed(let message)):
-            message.isEmpty ? L.Dictionary.Create.Failure.invalidResponse : message
-        case .service(.invalidResponse):
-            L.Dictionary.Create.Failure.invalidResponse
-        }
-    }
+    case service(LLMError)
 }
 
 struct DictionaryGenerator: Sendable {
     static let minimumWordCount = 300
     static let wordsPerPlayer = 100
 
-    private let client: OpenRouterClient
+    private let client: LLMClient
 
-    init(client: OpenRouterClient = OpenRouterClient()) {
+    init(client: LLMClient = LLMClient()) {
         self.client = client
     }
 
@@ -41,7 +25,7 @@ struct DictionaryGenerator: Sendable {
     func generate(
         topic: String,
         wordCount: Int,
-        configuration: OpenRouterConfiguration,
+        configuration: LLMConfiguration,
         onProgress: (Int) -> Void
     ) async throws -> WordDictionary {
         let topic = topic.trimmingCharacters(in: .whitespacesAndNewlines)
@@ -55,7 +39,7 @@ struct DictionaryGenerator: Sendable {
                 parser.consume(content)
                 if parser.words.count != previousCount { onProgress(parser.words.count) }
             }
-        } catch let error as OpenRouterError {
+        } catch let error as LLMError {
             throw DictionaryGenerationError.service(error)
         }
 
@@ -78,9 +62,7 @@ struct DictionaryGenerator: Sendable {
                 .init(role: "system", content: systemPrompt),
                 .init(role: "user", content: "Topic: \(topic)\nGenerate exactly \(wordCount) words."),
             ],
-            responseFormat: .init(jsonSchema: .init(name: "alias_dictionary", strict: true, schema: schema(wordCount: wordCount))),
-            reasoning: .init(effort: "minimal"),
-            maxTokens: wordCount * 10 + 2_000
+            responseFormat: .init(jsonSchema: .init(name: "alias_dictionary", strict: true, schema: schema(wordCount: wordCount)))
         )
     }
 

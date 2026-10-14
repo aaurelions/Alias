@@ -11,8 +11,17 @@ struct TurnResultsScreen: View {
         return session.players.filter { $0.id != explainerID }.map(\.player)
     }
 
+    /// Presents the bonus picker while a flipped last word waits for its bonus player; dismissing it keeps the turn unchanged.
+    private var isBonusPickerPresented: Binding<Bool> {
+        Binding {
+            resultsAwaitingBonusPlayer != nil
+        } set: { isPresented in
+            if !isPresented { resultsAwaitingBonusPlayer = nil }
+        }
+    }
+
     var body: some View {
-        ZStack {
+        Group {
             if let turn = session.lastTurn {
                 VStack(spacing: 0) {
                     ScrollView {
@@ -40,19 +49,19 @@ struct TurnResultsScreen: View {
                         .padding()
                         .frame(height: 80)
                 }
-                .blur(radius: resultsAwaitingBonusPlayer == nil ? 0 : 10)
-                .disabled(resultsAwaitingBonusPlayer != nil)
-            }
-
-            if let results = resultsAwaitingBonusPlayer {
-                LastWordBonusSheet(players: bonusCandidates, bonusPoints: session.settings.lastWordBonusPoints) { player in
-                    session.reviseLastTurn(wordResults: results, bonusPlayerID: player.id)
-                    resultsAwaitingBonusPlayer = nil
-                }
             }
         }
-        .background(DarkBackgroundView(backgroundImage: "TurnResultsScreenBg"))
+        .frame(maxWidth: .infinity, maxHeight: .infinity)
+        .screenBackground(.turnResultsScreenBg)
         .toolbar(.hidden, for: .navigationBar)
+        .sheet(isPresented: isBonusPickerPresented) {
+            LastWordBonusSheet(players: bonusCandidates, bonusPoints: session.settings.lastWordBonusPoints) { player in
+                if let results = resultsAwaitingBonusPlayer {
+                    session.reviseLastTurn(wordResults: results, bonusPlayerID: player.id)
+                }
+                resultsAwaitingBonusPlayer = nil
+            }
+        }
     }
 
     /// Flips a word between guessed and skipped. Marking the last word as guessed asks who earned the bonus.
@@ -168,70 +177,81 @@ private struct TotalScoresSection: View {
     @Binding var isRevealed: Bool
 
     var body: some View {
-        VStack(spacing: 16) {
-            HStack {
-                Image(systemName: isRevealed ? "eye.fill" : "eye.slash.fill")
-                    .font(.system(size: 18))
-                    .foregroundStyle(Theme.current.textSecondary.opacity(0.8))
-
-                Text(L.TurnResults.totalScores)
-                    .font(Theme.Typography.heading1(size: 20))
-                    .foregroundStyle(Theme.current.textSecondary.opacity(0.8))
-
-                Spacer()
-
-                Image(systemName: "chevron.down")
-                    .font(.system(size: 14))
-                    .foregroundStyle(Theme.current.textSecondary.opacity(0.6))
-                    .rotationEffect(.degrees(isRevealed ? 180 : 0))
+        Button {
+            withAnimation(.easeInOut(duration: 0.3)) { isRevealed.toggle() }
+        } label: {
+            VStack(spacing: 16) {
+                header
+                scores
             }
+            .contentShape(.rect)
+        }
+        .buttonStyle(.plain)
+    }
 
-            ZStack {
-                VStack(spacing: 12) {
-                    ForEach(players.sorted { $0.score > $1.score }) { player in
-                        HStack(spacing: 16) {
-                            Text(player.emoji)
-                                .font(.system(size: 28))
+    private var header: some View {
+        HStack {
+            Image(systemName: isRevealed ? "eye.fill" : "eye.slash.fill")
+                .font(.system(size: 18))
+                .foregroundStyle(Theme.current.textSecondary.opacity(0.8))
 
-                            Text(player.name)
-                                .font(Theme.Typography.body(size: 18))
-                                .foregroundStyle(Theme.current.textPrimary)
+            Text(L.TurnResults.totalScores)
+                .font(Theme.Typography.heading1(size: 20))
+                .foregroundStyle(Theme.current.textSecondary.opacity(0.8))
 
-                            Spacer()
+            Spacer()
 
-                            Text("\(player.score)")
-                                .font(Theme.Typography.heading1(size: 22))
-                                .foregroundStyle(Theme.current.textPrimary)
-                                .overlay(alignment: .topTrailing) {
-                                    PointsDeltaBadge(points: turnPoints(for: player.id))
-                                        .offset(x: 14, y: -14)
-                                }
-                        }
-                        .padding(.horizontal, 20)
-                        .padding(.vertical, 14)
-                        .background(
-                            RoundedRectangle(cornerRadius: 12)
-                                .fill(Theme.current.surfacePrimary.opacity(0.2))
-                                .overlay(
-                                    RoundedRectangle(cornerRadius: 12)
-                                        .stroke(Theme.current.borderPrimary.opacity(0.6), lineWidth: 1)
-                                )
-                        )
+            Image(systemName: "chevron.down")
+                .font(.system(size: 14))
+                .foregroundStyle(Theme.current.textSecondary.opacity(0.6))
+                .rotationEffect(.degrees(isRevealed ? 180 : 0))
+                .accessibilityHidden(true)
+        }
+    }
+
+    private var scores: some View {
+        ZStack {
+            VStack(spacing: 12) {
+                ForEach(players.sorted { $0.score > $1.score }) { player in
+                    HStack(spacing: 16) {
+                        Text(player.emoji)
+                            .font(.system(size: 28))
+
+                        Text(player.name)
+                            .font(Theme.Typography.body(size: 18))
+                            .foregroundStyle(Theme.current.textPrimary)
+
+                        Spacer()
+
+                        Text(player.score, format: .number)
+                            .font(Theme.Typography.heading1(size: 22))
+                            .foregroundStyle(Theme.current.textPrimary)
+                            .overlay(alignment: .topTrailing) {
+                                PointsDeltaBadge(points: turnPoints(for: player.id))
+                                    .offset(x: 14, y: -14)
+                            }
                     }
-                }
-                .blur(radius: isRevealed ? 0 : 10)
-
-                if !isRevealed {
-                    Text(L.TurnResults.tapToReveal)
-                        .font(Theme.Typography.body(size: 16))
-                        .foregroundStyle(Theme.current.textSecondary.opacity(0.8))
-                        .allowsHitTesting(false)
+                    .padding(.horizontal, 20)
+                    .padding(.vertical, 14)
+                    .background(
+                        RoundedRectangle(cornerRadius: 12)
+                            .fill(Theme.current.surfacePrimary.opacity(0.2))
+                            .overlay(
+                                RoundedRectangle(cornerRadius: 12)
+                                    .stroke(Theme.current.borderPrimary.opacity(0.6), lineWidth: 1)
+                            )
+                    )
                 }
             }
-            .onTapGesture {
-                withAnimation(.easeInOut(duration: 0.3)) {
-                    isRevealed.toggle()
-                }
+            .blur(radius: isRevealed ? 0 : 10)
+            // Keep hidden scores hidden from VoiceOver too.
+            .accessibilityHidden(!isRevealed)
+
+            if !isRevealed {
+                Text(L.TurnResults.tapToReveal)
+                    .font(Theme.Typography.body(size: 16))
+                    .foregroundStyle(Theme.current.textSecondary.opacity(0.8))
+                    .allowsHitTesting(false)
             }
         }
     }
@@ -252,7 +272,7 @@ private struct PointsDeltaBadge: View {
 
     var body: some View {
         if points != 0 {
-            Text(points > 0 ? "+\(points)" : "\(points)")
+            Text(points, format: .number.sign(strategy: .always()))
                 .font(Theme.Typography.body(size: 12))
                 .foregroundStyle(.white)
                 .padding(.horizontal, 6)

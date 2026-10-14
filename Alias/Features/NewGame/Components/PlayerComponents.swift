@@ -41,16 +41,20 @@ private struct PlayerInfoSection: View {
     let onEdit: (Player) -> Void
 
     var body: some View {
-        HStack {
-            PlayerAvatar(emoji: player.emoji)
-            Spacer()
-            PlayerNameLabel(name: player.name)
-            Spacer()
-        }
-        .contentShape(Rectangle())
-        .onTapGesture {
+        Button {
             onEdit(player)
+        } label: {
+            HStack {
+                PlayerAvatar(emoji: player.emoji)
+                    .accessibilityHidden(true)
+                Spacer()
+                PlayerNameLabel(name: player.name)
+                Spacer()
+            }
+            .contentShape(.rect)
         }
+        .buttonStyle(.plain)
+        .accessibilityHint(L.Player.Edit.title)
     }
 }
 
@@ -84,6 +88,7 @@ private struct PlayerNameLabel: View {
                 .foregroundStyle(Theme.current.textPrimary.opacity(0.9))
 
             PlayerNameDecoration()
+                .accessibilityHidden(true)
         }
     }
 }
@@ -111,18 +116,17 @@ private struct PlayerDeleteButton: View {
     let onDelete: (Player) -> Void
 
     var body: some View {
-        Button(action: {
+        Button {
             onDelete(player)
-        }) {
-            ZStack {
-                Image(systemName: "xmark.seal.fill")
-                    .font(.system(size: 16))
-                    .foregroundStyle(Theme.current.accentDestructive.opacity(0.6))
-                    .padding(.horizontal, 10)
-                    .frame(width: 60, height: 60)
-            }
+        } label: {
+            Image(systemName: "xmark.seal.fill")
+                .font(.system(size: 16))
+                .foregroundStyle(Theme.current.accentDestructive.opacity(0.6))
+                .padding(.horizontal, 10)
+                .frame(width: 60, height: 60)
         }
         .buttonStyle(.plain)
+        .accessibilityLabel(L.Accessibility.removePlayer(player.name))
     }
 }
 

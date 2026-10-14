@@ -17,18 +17,52 @@ struct LocalizationTests {
     }
 
     @Test(arguments: Language.allCases)
-    func builtInDictionariesAreLocalizedAndNonEmpty(language: Language) {
-        let defaults = UserDefaults.standard
-        let original = defaults.string(forKey: AppSettings.languageKey)
-        defaults.set(language.rawValue, forKey: AppSettings.languageKey)
-        defer { defaults.set(original, forKey: AppSettings.languageKey) }
+    func builtInDictionariesAreLocalizedAndNonEmpty(language: Language) throws {
+        let path = try #require(language.bundle.path(forResource: "Localizable", ofType: "strings"))
+        let table = try #require(NSDictionary(contentsOfFile: path) as? [String: String])
 
         for difficulty in Difficulty.allCases {
             let dictionary = WordDictionary.builtIn(difficulty, language: language)
             #expect(!dictionary.name.isEmpty)
             #expect(!dictionary.name.hasPrefix("dictionary."))
+            // The name follows the dictionary's language, not the app's current language.
+            #expect(table.values.contains(dictionary.name))
             #expect(dictionary.wordCount >= 50)
             #expect(WordList.unique(dictionary.words).count == dictionary.wordCount)
         }
+    }
+
+    @Test func stringsFollowTheSelectedLanguage() {
+        let settings = AppSettings.shared
+        let original = settings.language
+        defer { settings.language = original }
+
+        settings.language = .english
+        #expect([L.Role.guesser, L.Role.explainer, L.Settings.pointsUnit, L.Settings.seconds(45), L.TurnStart.round(2)]
+            == ["Guesser", "Explainer", "points", "45s", "Round 2"])
+
+        settings.language = .ukrainian
+        #expect([L.Role.guesser, L.Role.explainer, L.Settings.pointsUnit, L.Settings.seconds(45), L.TurnStart.round(2)]
+            == ["Відгадувач", "Пояснювач", "очки", "45 с", "Раунд 2"])
+
+        settings.language = .russian
+        #expect([L.Role.guesser, L.Role.explainer, L.Settings.pointsUnit, L.Settings.seconds(45), L.TurnStart.round(2)]
+            == ["Отгадывающий", "Объясняющий", "очки", "45 с", "Раунд 2"])
+    }
+
+    @Test func generationErrorsMapToReadableMessages() {
+        let settings = AppSettings.shared
+        let original = settings.language
+        defer { settings.language = original }
+        settings.language = .english
+
+        #expect(L.Dictionary.Create.Failure.message(for: DictionaryGenerationError.service(.streamFailed(message: "")))
+            == L.Dictionary.Create.Failure.invalidResponse)
+        #expect(L.Dictionary.Create.Failure.message(for: DictionaryGenerationError.service(.streamFailed(message: "Overloaded")))
+            == "Overloaded")
+        #expect(L.Dictionary.Create.Failure.message(for: DictionaryGenerationError.service(.requestFailed(statusCode: 401, message: "")))
+            == "The AI service request failed (status 401).")
+        #expect(L.Dictionary.Create.Failure.message(for: DictionaryGenerationError.service(.invalidBaseURL))
+            == L.Dictionary.Create.Failure.invalidBaseURL)
     }
 }

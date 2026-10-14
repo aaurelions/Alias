@@ -1,10 +1,12 @@
 import SwiftUI
 
-struct CreateDictionaryAlert: View {
-    @Binding var isPresented: Bool
+/// Asks for a topic and shows streaming progress while the dictionary is generated.
+/// Present it with `.sheet`; dismissing it cancels a running generation.
+struct CreateDictionarySheet: View {
     let state: NewGameModel.GenerationState
     let onGenerate: (String) -> Void
 
+    @Environment(\.dismiss) private var dismiss
     @State private var topic = ""
     @FocusState private var isTopicFocused: Bool
 
@@ -13,37 +15,34 @@ struct CreateDictionaryAlert: View {
     }
 
     var body: some View {
-        FormModal(title: L.Dictionary.Create.title, isPresented: $isPresented) {
-            VStack(spacing: 16) {
-                GenerationStatusView(state: state)
+        VStack(spacing: 16) {
+            SheetTitle(L.Dictionary.Create.title)
 
-                TextEditor(text: $topic)
-                    .font(Theme.Typography.body(size: 16))
-                    .foregroundStyle(Theme.current.textPrimary)
-                    .scrollContentBackground(.hidden)
-                    .frame(height: 100)
-                    .padding(10)
-                    .background(Color.black.opacity(0.2), in: .rect(cornerRadius: 10))
-                    .focused($isTopicFocused)
-                    .disabled(state.isGenerating)
-                    .opacity(state.isGenerating ? 0.5 : 1)
+            GenerationStatusView(state: state)
 
-                HStack(spacing: 12) {
-                    AlertActionButton(title: L.cancel, style: .secondary) {
-                        isPresented = false
-                    }
+            TextEditor(text: $topic)
+                .font(Theme.Typography.body(size: 16))
+                .foregroundStyle(Theme.current.textPrimary)
+                .scrollContentBackground(.hidden)
+                .frame(height: 100)
+                .padding(10)
+                .background(.black.opacity(0.2), in: .rect(cornerRadius: 10))
+                .focused($isTopicFocused)
+                .disabled(state.isGenerating)
+                .opacity(state.isGenerating ? 0.5 : 1)
 
-                    AlertActionButton(title: L.Dictionary.Create.generate, style: .primary, isLoading: state.isGenerating) {
-                        isTopicFocused = false
-                        onGenerate(trimmedTopic)
-                    }
-                    .disabled(state.isGenerating || trimmedTopic.isEmpty)
-                    .opacity(trimmedTopic.isEmpty ? 0.6 : 1)
+            HStack(spacing: 12) {
+                ActionButton(title: L.cancel, role: .secondary) { dismiss() }
+
+                ActionButton(title: L.Dictionary.Create.generate, isLoading: state.isGenerating) {
+                    isTopicFocused = false
+                    onGenerate(trimmedTopic)
                 }
-                .padding(.top, 10)
+                .disabled(trimmedTopic.isEmpty)
             }
+            .padding(.top, 10)
         }
-        .presentationBackground(.clear)
+        .themedSheet()
         .onAppear { isTopicFocused = true }
     }
 }
@@ -100,7 +99,7 @@ private struct GenerationProgressBar: View {
                 .animation(.linear(duration: 0.3), value: received)
 
             HStack {
-                Text("\(received) / \(target) \(L.Dictionary.Create.words)")
+                Text(L.Dictionary.Create.progress(received, target))
                     .foregroundStyle(Theme.current.textSecondary)
                 Spacer()
                 Text(fraction, format: .percent.precision(.fractionLength(0)))
@@ -113,5 +112,9 @@ private struct GenerationProgressBar: View {
 }
 
 #Preview {
-    CreateDictionaryAlert(isPresented: .constant(true), state: .generating(received: 120, target: 300)) { _ in }
+    Color.black
+        .sheet(isPresented: .constant(true)) {
+            CreateDictionarySheet(state: .generating(received: 120, target: 300)) { _ in }
+        }
+        .previewEnvironment()
 }

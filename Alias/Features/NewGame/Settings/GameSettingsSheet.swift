@@ -1,25 +1,37 @@
 import SwiftUI
 
+/// Round rules for the game being set up. Present it with `.sheet`.
 struct GameSettingsSheet: View {
-    @Binding var isPresented: Bool
     @Binding var settings: GameSettings
 
     var body: some View {
-        BottomSheet(isPresented: $isPresented) {
-            VStack(spacing: 24) {
-                RoundTimePicker(selectedRoundTime: $settings.roundTime)
-                PointsToWinPicker(selectedPointsToWin: $settings.pointsToWin)
-                GuessedWordPointsRow(guesserValue: $settings.guesserPoints, explainerValue: $settings.explainerPoints)
-                SkippedWordPenaltyRow(guesserValue: $settings.guesserPenalty, explainerValue: $settings.explainerPenalty)
-                LastWordBonusRow(enabled: $settings.lastWordBonusEnabled, points: $settings.lastWordBonusPoints)
-            }
+        VStack(spacing: 24) {
+            RoundTimePicker(selectedRoundTime: $settings.roundTime)
+            PointsToWinPicker(selectedPointsToWin: $settings.pointsToWin)
+            PointsRow(
+                title: L.Settings.pointsForGuessed,
+                guesserValue: $settings.guesserPoints,
+                explainerValue: $settings.explainerPoints,
+                isPenalty: false
+            )
+            PointsRow(
+                title: L.Settings.penaltyForSkipped,
+                guesserValue: $settings.guesserPenalty,
+                explainerValue: $settings.explainerPenalty,
+                isPenalty: true
+            )
+            LastWordBonusRow(isEnabled: $settings.lastWordBonusEnabled, points: $settings.lastWordBonusPoints)
         }
+        .themedSheet()
     }
 }
 
 #Preview {
     @Previewable @State var settings = GameSettings()
 
-    GameSettingsSheet(isPresented: .constant(true), settings: $settings)
-        .background(Color.black)
+    Color.black
+        .sheet(isPresented: .constant(true)) {
+            GameSettingsSheet(settings: $settings)
+        }
+        .previewEnvironment()
 }

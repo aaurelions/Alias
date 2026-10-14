@@ -80,7 +80,7 @@ final class NewGameModel {
         }
     }
 
-    func generateDictionary(topic: String, configuration: OpenRouterConfiguration) {
+    func generateDictionary(topic: String, configuration: LLMConfiguration) {
         generationTask?.cancel()
         let target = DictionaryGenerator.targetWordCount(playerCount: max(players.count, 2))
         generationState = .generating(received: 0, target: target)
@@ -99,7 +99,7 @@ final class NewGameModel {
             } catch let error as URLError where error.code == .cancelled {
                 generationState = .idle
             } catch {
-                generationState = .failed(message: error.localizedDescription)
+                generationState = .failed(message: L.Dictionary.Create.Failure.message(for: error))
             }
         }
     }

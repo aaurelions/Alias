@@ -26,6 +26,8 @@ struct GameplayScreen: View {
     @State private var hasStarted = false
     @State private var isPaused = false
     @State private var isExitConfirmationPresented = false
+    @State private var isBonusPickerPresented = false
+    @State private var bonusPlayerID: UUID?
     @State private var flashColor: Color?
     @State private var dragOffset: CGFloat = 0
     @State private var hasSwipedOnce = false
@@ -52,55 +54,55 @@ struct GameplayScreen: View {
                     .allowsHitTesting(false)
             }
 
-            GeometryReader { geometry in
-                VStack(spacing: 0) {
-                    topBar
-                    progressBar(width: geometry.size.width - 40)
+            VStack(spacing: 0) {
+                topBar
+                progressBar
 
-                    Spacer()
+                Spacer()
 
-                    if !hasSwipedOnce {
-                        SwipeHint(systemImage: "arrow.up.circle.fill", text: L.Gameplay.swipeUpGuessed, color: Theme.current.accentSuccess)
-                            .padding(.bottom, 20)
-                    }
-
-                    AnimatedWordDisplay(
-                        word: currentWord,
-                        shouldExplode: shouldExplodeLetters,
-                        dragOffset: dragOffset,
-                        animationSeed: letterAnimationSeed
-                    )
-                    .padding(.horizontal, 40)
-
-                    if phase == .playing && !hasSwipedOnce {
-                        SwipeHint(systemImage: "arrow.down.circle.fill", text: L.Gameplay.swipeDownSkipped, color: Theme.current.accentDestructive, isTextFirst: true)
-                            .padding(.top, 20)
-                    }
-
-                    Spacer()
-
-                    HStack(spacing: 40) {
-                        Button { resolve(isGuessed: false) } label: {
-                            Image(systemName: "arrow.down.circle.fill")
-                                .font(.system(size: 50))
-                                .foregroundStyle(Theme.current.accentDestructive)
-                        }
-                        .accessibilityLabel(L.Gameplay.swipeDownSkipped)
-
-                        Button { resolve(isGuessed: true) } label: {
-                            Image(systemName: "arrow.up.circle.fill")
-                                .font(.system(size: 50))
-                                .foregroundStyle(Theme.current.accentSuccess)
-                        }
-                        .accessibilityLabel(L.Gameplay.swipeUpGuessed)
-                    }
-                    .padding(.bottom, 40)
+                if !hasSwipedOnce {
+                    SwipeHint(systemImage: "arrow.up.circle.fill", text: L.Gameplay.swipeUpGuessed, color: Theme.current.accentSuccess)
+                        .padding(.bottom, 20)
                 }
-                .blur(radius: isInteractionBlocked ? 10 : 0)
-                .disabled(isInteractionBlocked)
-            }
 
-            overlays
+                AnimatedWordDisplay(
+                    word: currentWord,
+                    shouldExplode: shouldExplodeLetters,
+                    dragOffset: dragOffset,
+                    animationSeed: letterAnimationSeed
+                )
+                .padding(.horizontal, 40)
+
+                if phase == .playing && !hasSwipedOnce {
+                    SwipeHint(systemImage: "arrow.down.circle.fill", text: L.Gameplay.swipeDownSkipped, color: Theme.current.accentDestructive, isTextFirst: true)
+                        .padding(.top, 20)
+                }
+
+                Spacer()
+
+                HStack(spacing: 40) {
+                    Button { resolve(isGuessed: false) } label: {
+                        Image(systemName: "arrow.down.circle.fill")
+                            .font(.system(size: 50))
+                            .foregroundStyle(Theme.current.accentDestructive)
+                    }
+                    .accessibilityLabel(L.Gameplay.swipeDownSkipped)
+
+                    Button { resolve(isGuessed: true) } label: {
+                        Image(systemName: "arrow.up.circle.fill")
+                            .font(.system(size: 50))
+                            .foregroundStyle(Theme.current.accentSuccess)
+                    }
+                    .accessibilityLabel(L.Gameplay.swipeUpGuessed)
+                }
+                .padding(.bottom, 40)
+            }
+            .blur(radius: isInteractionBlocked ? 10 : 0)
+            .disabled(isInteractionBlocked)
+
+            if isPaused {
+                pauseOverlay
+            }
 
             if isPawVisible {
                 PawAnimation()
@@ -108,8 +110,26 @@ struct GameplayScreen: View {
         }
         .contentShape(.rect)
         .gesture(swipeGesture)
-        .background(DarkBackgroundView(backgroundImage: "GameplayScreenBg"))
+        .screenBackground(.gameplayScreenBg)
         .toolbar(.hidden, for: .navigationBar)
+        .alert(L.Gameplay.exitTitle, isPresented: $isExitConfirmationPresented) {
+            Button(L.cancel, role: .cancel) {}
+            Button(L.exit, role: .destructive) { router.goHome() }
+        } message: {
+            Text(L.Gameplay.exitMessage)
+        }
+        .alert(L.Gameplay.noMoreWords, isPresented: isOutOfWordsAlertPresented) {
+            Button(L.continue) {}
+        } message: {
+            Text(L.Gameplay.poolExhausted)
+        }
+        .sheet(isPresented: $isBonusPickerPresented, onDismiss: { finishTurn(bonusPlayerID: bonusPlayerID) }) {
+            LastWordBonusSheet(players: bonusCandidates, bonusPoints: session.settings.lastWordBonusPoints) { player in
+                bonusPlayerID = player.id
+                isBonusPickerPresented = false
+            }
+            .interactiveDismissDisabled()
+        }
         .onChange(of: scenePhase) { _, newPhase in
             if newPhase != .active { isPaused = true }
         }
@@ -160,7 +180,7 @@ struct GameplayScreen: View {
         .padding(.top, 10)
     }
 
-    private func progressBar(width: CGFloat) -> some View {
+    private var progressBar: some View {
         let gradient = LinearGradient(
             colors: [Theme.current.accentDestructive, Theme.current.accentSuccess],
             startPoint: .leading,
@@ -168,54 +188,43 @@ struct GameplayScreen: View {
         )
         let progress = totalTime > 0 ? max(0, min(1, timeRemaining / totalTime)) : 0
 
-        return ZStack(alignment: .leading) {
-            gradient
-                .frame(height: 4)
-                .opacity(0.3)
-
-            gradient
-                .frame(width: max(0, width * progress), height: 4)
-                .animation(.linear(duration: 0.1), value: timeRemaining)
-        }
-        .padding(.horizontal, 20)
-        .padding(.top, 16)
+        return gradient
+            .opacity(0.3)
+            .overlay {
+                gradient
+                    .scaleEffect(x: progress, anchor: .leading)
+                    .animation(.linear(duration: 0.1), value: timeRemaining)
+            }
+            .frame(height: 4)
+            .padding(.horizontal, 20)
+            .padding(.top, 16)
+            .accessibilityHidden(true)
     }
 
-    @ViewBuilder
-    private var overlays: some View {
-        if isPaused {
-            ZStack {
-                Color.black.opacity(0.5)
-                    .ignoresSafeArea()
-                    .onTapGesture { withAnimation { isPaused = false } }
+    private var pauseOverlay: some View {
+        ZStack {
+            Color.black.opacity(0.5)
+                .ignoresSafeArea()
+                .onTapGesture { withAnimation { isPaused = false } }
+                .accessibilityHidden(true)
 
-                Button {
-                    withAnimation { isPaused = false }
-                } label: {
-                    Image(systemName: "play.circle.fill")
-                        .font(.system(size: 100))
-                        .foregroundStyle(Theme.current.interactivePrimary)
-                }
-                .accessibilityLabel(L.Accessibility.play)
+            Button {
+                withAnimation { isPaused = false }
+            } label: {
+                Image(systemName: "play.circle.fill")
+                    .font(.system(size: 100))
+                    .foregroundStyle(Theme.current.interactivePrimary)
             }
+            .accessibilityLabel(L.Accessibility.play)
         }
+    }
 
-        if isExitConfirmationPresented {
-            ExitConfirmationPopup(isPresented: $isExitConfirmationPresented) {
-                router.goHome()
-            }
-        }
-
-        if phase == .choosingBonusPlayer {
-            LastWordBonusSheet(players: bonusCandidates, bonusPoints: session.settings.lastWordBonusPoints) { player in
-                finishTurn(bonusPlayerID: player.id)
-            }
-        }
-
-        if phase == .outOfWords {
-            NoMoreWordsOverlay {
-                finishTurn(bonusPlayerID: nil)
-            }
+    /// Shown while `phase == .outOfWords`; dismissing it ends the turn.
+    private var isOutOfWordsAlertPresented: Binding<Bool> {
+        Binding {
+            phase == .outOfWords
+        } set: { isPresented in
+            if !isPresented { finishTurn(bonusPlayerID: nil) }
         }
     }
 
@@ -320,6 +329,7 @@ struct GameplayScreen: View {
             }
             if isGuessed && session.settings.lastWordBonusEnabled && !bonusCandidates.isEmpty {
                 phase = .choosingBonusPlayer
+                isBonusPickerPresented = true
             } else {
                 finishTurn(bonusPlayerID: nil)
             }
@@ -385,78 +395,6 @@ private struct SwipeHint: View {
     }
 }
 
-// MARK: - Exit Confirmation Popup
-
-private struct ExitConfirmationPopup: View {
-    @Binding var isPresented: Bool
-    let onConfirm: () -> Void
-
-    var body: some View {
-        ZStack {
-            Color.black.opacity(0.5)
-                .ignoresSafeArea()
-                .onTapGesture {
-                    withAnimation {
-                        isPresented = false
-                    }
-                }
-
-            VStack(spacing: 24) {
-                Text(L.Gameplay.exitTitle)
-                    .font(Theme.Typography.heading1(size: 28))
-                    .foregroundStyle(Theme.current.textPrimary)
-
-                Text(L.Gameplay.exitMessage)
-                    .font(Theme.Typography.body(size: 16))
-                    .foregroundStyle(Theme.current.textSecondary)
-                    .multilineTextAlignment(.center)
-                    .padding(.horizontal, 20)
-
-                HStack(spacing: 16) {
-                    Button(action: {
-                        withAnimation {
-                            isPresented = false
-                        }
-                    }) {
-                        Text(L.cancel)
-                            .font(Theme.Typography.body(size: 18))
-                            .foregroundStyle(Theme.current.textPrimary)
-                            .frame(maxWidth: .infinity)
-                            .padding(.vertical, 16)
-                            .background(Theme.current.surfacePrimary.opacity(0.3))
-                            .clipShape(.rect(cornerRadius: 12))
-                            .overlay(
-                                RoundedRectangle(cornerRadius: 12)
-                                    .stroke(Theme.current.borderPrimary.opacity(0.6), lineWidth: 1)
-                            )
-                    }
-
-                    Button(action: onConfirm) {
-                        Text(L.exit)
-                            .font(Theme.Typography.body(size: 18))
-                            .foregroundStyle(.white)
-                            .frame(maxWidth: .infinity)
-                            .padding(.vertical, 16)
-                            .background(Theme.current.accentDestructive)
-                            .clipShape(.rect(cornerRadius: 12))
-                    }
-                }
-                .padding(.horizontal, 20)
-            }
-            .padding(30)
-            .background(
-                RoundedRectangle(cornerRadius: 20)
-                    .fill(Color.black.opacity(0.5))
-                    .overlay(
-                        RoundedRectangle(cornerRadius: 20)
-                            .stroke(Theme.current.borderPrimary.opacity(0.6), lineWidth: 1)
-                    )
-            )
-            .padding(.horizontal, 40)
-        }
-    }
-}
-
 // MARK: - Animated Word Display
 
 private struct AnimatedWordDisplay: View {
@@ -499,56 +437,6 @@ private struct AnimatedWordDisplay: View {
     }
 }
 
-// MARK: - No More Words Overlay
-
-private struct NoMoreWordsOverlay: View {
-    let onDismiss: () -> Void
-
-    var body: some View {
-        ZStack {
-            Color.black.opacity(0.5)
-                .ignoresSafeArea()
-
-            VStack(spacing: 24) {
-                Image(systemName: "exclamationmark.triangle.fill")
-                    .font(.system(size: 60))
-                    .foregroundStyle(Theme.current.accentHighlight)
-
-                Text(L.Gameplay.noMoreWords)
-                    .font(Theme.Typography.heading1(size: 28))
-                    .foregroundStyle(Theme.current.textPrimary)
-
-                Text(L.Gameplay.poolExhausted)
-                    .font(Theme.Typography.body(size: 16))
-                    .foregroundStyle(Theme.current.textSecondary)
-                    .multilineTextAlignment(.center)
-                    .padding(.horizontal, 20)
-
-                Button(action: onDismiss) {
-                    Text(L.continue)
-                        .font(Theme.Typography.body(size: 18))
-                        .foregroundStyle(.white)
-                        .frame(maxWidth: .infinity)
-                        .padding(.vertical, 16)
-                        .background(Theme.current.interactivePrimary)
-                        .clipShape(.rect(cornerRadius: 12))
-                }
-                .padding(.horizontal, 20)
-            }
-            .padding(30)
-            .background(
-                RoundedRectangle(cornerRadius: 20)
-                    .fill(Color.black.opacity(0.5))
-                    .overlay(
-                        RoundedRectangle(cornerRadius: 20)
-                            .stroke(Theme.current.borderPrimary.opacity(0.6), lineWidth: 1)
-                    )
-            )
-            .padding(.horizontal, 40)
-        }
-    }
-}
-
 // MARK: - Paw Animation
 
 private struct PawAnimation: View {
@@ -557,7 +445,7 @@ private struct PawAnimation: View {
     @State private var pawScale: CGFloat = 1
 
     var body: some View {
-        Image("Paw")
+        Image(.paw)
             .resizable()
             .scaledToFit()
             .frame(width: 200)

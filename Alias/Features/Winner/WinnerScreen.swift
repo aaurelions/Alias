@@ -41,7 +41,7 @@ struct WinnerScreen: View {
             .padding()
             .frame(height: 80)
         }
-        .background(DarkBackgroundView(backgroundImage: "WinnerScreenBg"))
+        .screenBackground(.winnerScreenBg)
         .toolbar(.hidden, for: .navigationBar)
         .onAppear { FeedbackService.shared.gameWon() }
     }
@@ -70,7 +70,7 @@ private struct WinnerDisplaySection: View {
                 Text(winner.name)
                     .font(Theme.Typography.logo(size: 40))
                     .foregroundStyle(Theme.current.textPrimary)
-                Text("\(score)")
+                Text(score, format: .number)
                     .font(Theme.Typography.heading3(size: 32))
                     .foregroundStyle(Theme.current.textSecondary.opacity(0.7))
                     .tracking(2)
@@ -116,11 +116,11 @@ private struct TiedWinnersDisplaySection: View {
             }
 
             VStack(spacing: 8) {
-                Text(winners.map(\.name).joined(separator: " & "))
+                Text(winners.map(\.name), format: .list(type: .and))
                     .font(Theme.Typography.logo(size: 32))
                     .foregroundStyle(Theme.current.textPrimary)
                     .multilineTextAlignment(.center)
-                Text("\(score)")
+                Text(score, format: .number)
                     .font(Theme.Typography.heading3(size: 32))
                     .foregroundStyle(Theme.current.textSecondary.opacity(0.7))
                     .tracking(2)
@@ -142,7 +142,7 @@ private struct OtherPlayersSection: View {
             VStack(spacing: 12) {
                 ForEach(Array(players.enumerated()), id: \.element.id) { index, player in
                     HStack(spacing: 16) {
-                        Text("\(firstRank + index)")
+                        Text(firstRank + index, format: .number)
                             .font(Theme.Typography.heading1(size: 20))
                             .foregroundStyle(Theme.current.textSecondary.opacity(0.6))
                             .frame(width: 30)
@@ -156,7 +156,7 @@ private struct OtherPlayersSection: View {
 
                         Spacer()
 
-                        Text("\(player.score)")
+                        Text(player.score, format: .number)
                             .font(Theme.Typography.heading1(size: 20))
                             .foregroundStyle(Theme.current.textSecondary.opacity(0.8))
                     }

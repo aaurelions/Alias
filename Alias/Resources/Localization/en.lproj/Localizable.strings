@@ -3,6 +3,7 @@
 // MARK: - Common
 "common.cancel" = "Cancel";
 "common.close" = "Close";
+"common.back" = "Back";
 "common.save" = "Save";
 "common.continue" = "Continue";
 "common.exit" = "Exit";
@@ -36,24 +37,35 @@
 "dictionary.create.generating" = "Generating words...";
 "dictionary.create.example" = "(e.g., \"Famous phrases from The Big Bang Theory\")";
 "dictionary.create.generate" = "Generate";
-"dictionary.create.words" = "words";
+"dictionary.create.progress" = "%1$d / %2$d words";
 "dictionary.create.failed" = "Generation failed";
 "dictionary.create.error.empty_topic" = "Describe a topic first.";
-"dictionary.create.error.missing_api_key" = "Add your OpenRouter API key in Settings on the home screen.";
+"dictionary.create.error.missing_api_key" = "Add an API key in Settings on the home screen.";
+"dictionary.create.error.missing_base_url" = "Add the API base URL in Settings on the home screen.";
+"dictionary.create.error.invalid_base_url" = "The API base URL in Settings is not valid. Use a full address such as https://api.openai.com/v1.";
+"dictionary.create.error.missing_model" = "Add a model name in Settings on the home screen.";
 "dictionary.create.error.invalid_response" = "The model returned an unexpected response. Try again or choose another model.";
-"dictionary.create.error.request_failed" = "OpenRouter request failed (status %d).";
+"dictionary.create.error.request_failed" = "The AI service request failed (status %d).";
 "dictionary.create.error.too_few_words" = "Only %1$d words were generated, at least %2$d are needed. Try a broader topic.";
 
 // MARK: - Settings
 "settings.language" = "Language";
 "settings.sound" = "Sound";
 "settings.vibration" = "Vibration";
-"settings.openrouter" = "OpenRouter";
-"settings.openrouter_api_key" = "OpenRouter API Key";
-"settings.openrouter_api_key_placeholder" = "API key";
-"settings.openrouter_model" = "OpenRouter Model";
-"settings.openrouter_model_placeholder" = "Model, e.g. openai/gpt-5.6-luna";
-"settings.openrouter_help" = "Used only for AI dictionary generation. The key is saved in Keychain on this device.";
+"settings.llm.title" = "AI Dictionaries";
+"settings.llm.subtitle" = "Any OpenAI-compatible API: OpenAI, OpenRouter, Groq, Ollama and more.";
+"settings.llm.status_ready" = "Ready";
+"settings.llm.status_incomplete" = "Not set up";
+"settings.llm.base_url" = "Base URL";
+"settings.llm.base_url_placeholder" = "https://api.openai.com/v1";
+"settings.llm.base_url_invalid" = "Enter a full address starting with https://";
+"settings.llm.api_key" = "API Key";
+"settings.llm.api_key_placeholder" = "sk-…";
+"settings.llm.show_api_key" = "Show API key";
+"settings.llm.hide_api_key" = "Hide API key";
+"settings.llm.model" = "Model";
+"settings.llm.model_placeholder" = "e.g. gpt-4.1-mini";
+"settings.llm.help" = "Used only to generate custom dictionaries. The API key is stored in the Keychain on this device.";
 "settings.round_time" = "Round Time";
 "settings.points_to_win" = "Points to Win";
 "settings.points_for_guessed" = "Points for Guessed Word";
@@ -61,15 +73,18 @@
 "settings.last_word_bonus" = "Last Word Bonus";
 "settings.bonus_points" = "Bonus points:";
 "settings.bonus" = "bonus";
+"settings.points_unit" = "points";
+"settings.penalty_unit" = "penalty";
+"settings.seconds_format" = "%ds";
 
 // MARK: - Turn Start Confirm Screen
 "turn_start.lets_go" = "Let's go!";
 "turn_start.how_to_play" = "How to Play";
 "turn_start.instruction_1" = "The Explainer describes the word without saying it";
 "turn_start.instruction_2" = "The Guesser tries to guess the word";
-"turn_start.instruction_3" = "Swipe right/top if guessed correctly, left/bottom to skip";
+"turn_start.instruction_3" = "Swipe up if the word was guessed, swipe down to skip it";
 "turn_start.instruction_4" = "Get as many points as possible before time runs out";
-"turn_start.round" = "Round";
+"turn_start.round_number" = "Round %d";
 "turn_start.turn_of" = "Turn %d/%d";
 
 // MARK: - Gameplay Screen
@@ -79,7 +94,7 @@
 "gameplay.exit_title" = "Exit Game?";
 "gameplay.exit_message" = "Are you sure you want to quit? Your progress will be lost.";
 "gameplay.last_word_bonus" = "Last Word Bonus!";
-"gameplay.who_gets_points" = "Who gets +%d points?";
+"gameplay.who_gets_points" = "Who gets the +%d bonus?";
 "gameplay.no_more_words" = "No More Words!";
 "gameplay.pool_exhausted" = "The word pool has been exhausted. The turn will end now.";
 
@@ -101,3 +116,6 @@
 "accessibility.next" = "Next";
 "accessibility.play" = "Play";
 "accessibility.pause" = "Pause";
+"accessibility.open_game_settings" = "Open Game Settings";
+"accessibility.close_game_settings" = "Close Game Settings";
+"accessibility.remove_player" = "Remove %@";

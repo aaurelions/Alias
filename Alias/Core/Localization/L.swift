@@ -1,11 +1,15 @@
 import Foundation
 
 /// Typed access to `Localizable.strings` in the language chosen in the app settings.
-nonisolated enum L {
+///
+/// Lookups read `AppSettings.shared.language`, an observable property, so any view whose
+/// body uses `L` is re-rendered automatically when the player switches the language.
+enum L {
     // MARK: - Common
 
     static var cancel: String { localized("common.cancel") }
     static var close: String { localized("common.close") }
+    static var back: String { localized("common.back") }
     static var save: String { localized("common.save") }
     static var `continue`: String { localized("common.continue") }
     static var exit: String { localized("common.exit") }
@@ -49,9 +53,14 @@ nonisolated enum L {
     // MARK: - Dictionary
 
     enum Dictionary {
-        static var easy: String { localized("dictionary.easy") }
-        static var medium: String { localized("dictionary.medium") }
-        static var hard: String { localized("dictionary.hard") }
+        static func builtInName(_ difficulty: Difficulty, in language: Language) -> String {
+            switch difficulty {
+            case .easy: localized("dictionary.easy", in: language)
+            case .medium: localized("dictionary.medium", in: language)
+            case .hard: localized("dictionary.hard", in: language)
+            }
+        }
+
         static var custom: String { localized("dictionary.custom") }
 
         enum Create {
@@ -60,12 +69,38 @@ nonisolated enum L {
             static var generating: String { localized("dictionary.create.generating") }
             static var example: String { localized("dictionary.create.example") }
             static var generate: String { localized("dictionary.create.generate") }
-            static var words: String { localized("dictionary.create.words") }
+
+            static func progress(_ received: Int, _ target: Int) -> String {
+                String(format: localized("dictionary.create.progress"), received, target)
+            }
+
             static var failed: String { localized("dictionary.create.failed") }
 
             enum Failure {
+                static func message(for error: DictionaryGenerationError) -> String {
+                    switch error {
+                    case .emptyTopic: emptyTopic
+                    case .tooFewWords(let received, let required): tooFewWords(received, required)
+                    case .service(.missingBaseURL): missingBaseURL
+                    case .service(.invalidBaseURL): invalidBaseURL
+                    case .service(.missingAPIKey): missingAPIKey
+                    case .service(.missingModel): missingModel
+                    case .service(.requestFailed(let statusCode, let message)): requestFailed(statusCode, message)
+                    case .service(.streamFailed(let message)): message.isEmpty ? invalidResponse : message
+                    case .service(.invalidResponse): invalidResponse
+                    }
+                }
+
+                /// A message for any error thrown while generating; unexpected errors fall back to the system description.
+                static func message(for error: any Error) -> String {
+                    (error as? DictionaryGenerationError).map(message(for:)) ?? error.localizedDescription
+                }
+
                 static var emptyTopic: String { localized("dictionary.create.error.empty_topic") }
                 static var missingAPIKey: String { localized("dictionary.create.error.missing_api_key") }
+                static var missingBaseURL: String { localized("dictionary.create.error.missing_base_url") }
+                static var invalidBaseURL: String { localized("dictionary.create.error.invalid_base_url") }
+                static var missingModel: String { localized("dictionary.create.error.missing_model") }
                 static var invalidResponse: String { localized("dictionary.create.error.invalid_response") }
 
                 static func requestFailed(_ statusCode: Int, _ message: String) -> String {
@@ -86,12 +121,24 @@ nonisolated enum L {
         static var language: String { localized("settings.language") }
         static var sound: String { localized("settings.sound") }
         static var vibration: String { localized("settings.vibration") }
-        static var openRouter: String { localized("settings.openrouter") }
-        static var openRouterAPIKey: String { localized("settings.openrouter_api_key") }
-        static var openRouterAPIKeyPlaceholder: String { localized("settings.openrouter_api_key_placeholder") }
-        static var openRouterModel: String { localized("settings.openrouter_model") }
-        static var openRouterModelPlaceholder: String { localized("settings.openrouter_model_placeholder") }
-        static var openRouterHelp: String { localized("settings.openrouter_help") }
+
+        enum LLM {
+            static var title: String { localized("settings.llm.title") }
+            static var subtitle: String { localized("settings.llm.subtitle") }
+            static var statusReady: String { localized("settings.llm.status_ready") }
+            static var statusIncomplete: String { localized("settings.llm.status_incomplete") }
+            static var baseURL: String { localized("settings.llm.base_url") }
+            static var baseURLPlaceholder: String { localized("settings.llm.base_url_placeholder") }
+            static var baseURLInvalid: String { localized("settings.llm.base_url_invalid") }
+            static var apiKey: String { localized("settings.llm.api_key") }
+            static var apiKeyPlaceholder: String { localized("settings.llm.api_key_placeholder") }
+            static var showAPIKey: String { localized("settings.llm.show_api_key") }
+            static var hideAPIKey: String { localized("settings.llm.hide_api_key") }
+            static var model: String { localized("settings.llm.model") }
+            static var modelPlaceholder: String { localized("settings.llm.model_placeholder") }
+            static var help: String { localized("settings.llm.help") }
+        }
+
         static var roundTime: String { localized("settings.round_time") }
         static var pointsToWin: String { localized("settings.points_to_win") }
         static var pointsForGuessed: String { localized("settings.points_for_guessed") }
@@ -99,6 +146,12 @@ nonisolated enum L {
         static var lastWordBonus: String { localized("settings.last_word_bonus") }
         static var bonusPoints: String { localized("settings.bonus_points") }
         static var bonus: String { localized("settings.bonus") }
+        static var pointsUnit: String { localized("settings.points_unit") }
+        static var penaltyUnit: String { localized("settings.penalty_unit") }
+
+        static func seconds(_ value: Int) -> String {
+            String(format: localized("settings.seconds_format"), value)
+        }
     }
 
     // MARK: - Turn Start
@@ -110,7 +163,10 @@ nonisolated enum L {
         static var instruction2: String { localized("turn_start.instruction_2") }
         static var instruction3: String { localized("turn_start.instruction_3") }
         static var instruction4: String { localized("turn_start.instruction_4") }
-        static var round: String { localized("turn_start.round") }
+
+        static func round(_ number: Int) -> String {
+            String(format: localized("turn_start.round_number"), number)
+        }
 
         static func turnOf(_ current: Int, _ total: Int) -> String {
             String(format: localized("turn_start.turn_of"), current, total)
@@ -169,11 +225,15 @@ nonisolated enum L {
         static var next: String { localized("accessibility.next") }
         static var play: String { localized("accessibility.play") }
         static var pause: String { localized("accessibility.pause") }
+        static var openGameSettings: String { localized("accessibility.open_game_settings") }
+        static var closeGameSettings: String { localized("accessibility.close_game_settings") }
+
+        static func removePlayer(_ name: String) -> String {
+            String(format: localized("accessibility.remove_player"), name)
+        }
     }
 
-    private static func localized(_ key: String) -> String {
-        let language = UserDefaults.standard.string(forKey: AppSettings.languageKey) ?? Language.english.rawValue
-        let bundle = Bundle.main.path(forResource: language, ofType: "lproj").flatMap(Bundle.init(path:)) ?? .main
-        return bundle.localizedString(forKey: key, value: nil, table: nil)
+    private static func localized(_ key: String, in language: Language = AppSettings.shared.language) -> String {
+        language.bundle.localizedString(forKey: key, value: nil, table: nil)
     }
 }

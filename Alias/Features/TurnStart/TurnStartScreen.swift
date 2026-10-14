@@ -6,52 +6,49 @@ struct TurnStartScreen: View {
     @State private var isInstructionsPresented = false
 
     var body: some View {
-        ZStack {
-            VStack(spacing: 0) {
-                ScrollView {
-                    VStack(spacing: 0) {
-                        NavigationHeader(
-                            title: "\(L.TurnStart.round) \(session.currentRound)",
-                            leftAction: .back(action: goBack),
-                            rightAction: .custom(icon: "questionmark.circle", accessibilityLabel: L.TurnStart.howToPlay) {
-                                withAnimation { isInstructionsPresented = true }
-                            }
-                        )
-
-                        GameMetadata(settings: session.settings)
-                            .padding(.vertical)
-
-                        if let guesser = session.currentGuesser {
-                            PlayerCard(player: guesser.player, role: L.Role.guesser, isEmojiLeading: true)
-                                .padding(.bottom, 40)
+        VStack(spacing: 0) {
+            ScrollView {
+                VStack(spacing: 0) {
+                    NavigationHeader(
+                        title: L.TurnStart.round(session.currentRound),
+                        leftAction: .back(action: goBack),
+                        rightAction: .custom(icon: "questionmark.circle", accessibilityLabel: L.TurnStart.howToPlay) {
+                            isInstructionsPresented = true
                         }
+                    )
 
-                        TurnDivider(turnInfo: L.TurnStart.turnOf(session.turnNumberInRound, session.turnsPerRound))
+                    GameMetadata(settings: session.settings)
+                        .padding(.vertical)
 
-                        if let explainer = session.currentExplainer {
-                            PlayerCard(player: explainer.player, role: L.Role.explainer, isEmojiLeading: false)
-                                .padding(.top, 40)
-                        }
+                    if let guesser = session.currentGuesser {
+                        PlayerCard(player: guesser.player, role: L.Role.guesser, isEmojiLeading: true)
+                            .padding(.bottom, 40)
                     }
-                    .padding(.horizontal)
-                }
-                .scrollIndicators(.hidden)
 
-                RippleButton(title: L.TurnStart.letsGo) {
-                    router.show(.gameplay)
-                }
-                .accessibilityLabel(L.Accessibility.play)
-                .disabled(session.currentPairing == nil)
-                .padding()
-                .frame(height: 80)
-            }
+                    TurnDivider(turnInfo: L.TurnStart.turnOf(session.turnNumberInRound, session.turnsPerRound))
 
-            if isInstructionsPresented {
-                InstructionsSheet(isPresented: $isInstructionsPresented)
+                    if let explainer = session.currentExplainer {
+                        PlayerCard(player: explainer.player, role: L.Role.explainer, isEmojiLeading: false)
+                            .padding(.top, 40)
+                    }
+                }
+                .padding(.horizontal)
             }
+            .scrollIndicators(.hidden)
+
+            RippleButton(title: L.TurnStart.letsGo) {
+                router.show(.gameplay)
+            }
+            .accessibilityLabel(L.Accessibility.play)
+            .disabled(session.currentPairing == nil)
+            .padding()
+            .frame(height: 80)
         }
-        .background(DarkBackgroundView(backgroundImage: "TurnStartConfirmScreenBg"))
+        .screenBackground(.turnStartConfirmScreenBg)
         .toolbar(.hidden, for: .navigationBar)
+        .sheet(isPresented: $isInstructionsPresented) {
+            InstructionsSheet()
+        }
     }
 
     /// Before the first turn this returns to game setup; afterwards it reopens the previous turn's results.
@@ -160,7 +157,7 @@ private struct GameMetadata: View {
 
     var body: some View {
         HStack(spacing: 20) {
-            MetadataItem(icon: "timer", value: "\(settings.roundTime)s")
+            MetadataItem(icon: "timer", value: L.Settings.seconds(settings.roundTime))
             MetadataItem(icon: "flag.checkered", value: "\(settings.pointsToWin)")
             MetadataItem(
                 icon: "arrow.up.circle.fill",
@@ -216,8 +213,6 @@ private struct MetadataItem: View {
 // MARK: - Instructions Sheet
 
 private struct InstructionsSheet: View {
-    @Binding var isPresented: Bool
-
     private let instructions = [
         L.TurnStart.instruction1,
         L.TurnStart.instruction2,
@@ -226,22 +221,15 @@ private struct InstructionsSheet: View {
     ]
 
     var body: some View {
-        BottomSheet(isPresented: $isPresented) {
-            VStack(alignment: .leading, spacing: 20) {
-                HStack {
-                    Spacer()
-                    Text(L.TurnStart.howToPlay)
-                        .font(Theme.Typography.heading1(size: 24))
-                        .foregroundStyle(Theme.current.textPrimary)
-                    Spacer()
-                }
+        VStack(alignment: .leading, spacing: 20) {
+            SheetTitle(L.TurnStart.howToPlay)
 
-                ForEach(Array(instructions.enumerated()), id: \.offset) { index, text in
-                    InstructionRow(number: index + 1, text: text)
-                }
+            ForEach(Array(instructions.enumerated()), id: \.offset) { index, text in
+                InstructionRow(number: index + 1, text: text)
             }
-            .frame(maxWidth: .infinity, alignment: .leading)
         }
+        .frame(maxWidth: .infinity, alignment: .leading)
+        .themedSheet()
     }
 }
 
@@ -253,7 +241,7 @@ private struct InstructionRow: View {
 
     var body: some View {
         HStack(alignment: .center, spacing: 16) {
-            Text("\(number)")
+            Text(number, format: .number)
                 .font(Theme.Typography.heading1(size: 24))
                 .foregroundStyle(Theme.current.interactivePrimary)
                 .frame(width: 32, height: 32)

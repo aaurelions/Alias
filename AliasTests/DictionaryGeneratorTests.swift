@@ -6,14 +6,15 @@ import Testing
 @MainActor
 @Suite(.serialized)
 struct DictionaryGeneratorTests {
-    private let configuration = OpenRouterConfiguration(apiKey: "test-key", model: "openai/gpt-5.6-luna")
+    private let configuration = LLMConfiguration(baseURL: "https://llm.example.com/v1", apiKey: "test-key", model: "test-model")
 
     private func makeGenerator(status: Int, body: String) -> DictionaryGenerator {
         StubURLProtocol.response.withLock { $0 = (status, Data(body.utf8)) }
         StubURLProtocol.lastRequestBody.withLock { $0 = nil }
+        StubURLProtocol.lastRequest.withLock { $0 = nil }
         let configuration = URLSessionConfiguration.ephemeral
         configuration.protocolClasses = [StubURLProtocol.self]
-        return DictionaryGenerator(client: OpenRouterClient(session: URLSession(configuration: configuration)))
+        return DictionaryGenerator(client: LLMClient(session: URLSession(configuration: configuration)))
     }
 
     private static func sse(_ contents: [String]) -> String {
@@ -22,7 +23,7 @@ struct DictionaryGeneratorTests {
             let data = try! JSONSerialization.data(withJSONObject: ["choices": [["delta": ["content": content]]]])
             return "data: \(String(decoding: data, as: UTF8.self))\n\n"
         }
-        return ": OPENROUTER PROCESSING\n\n" + events.joined() + "data: {\"choices\":[],\"usage\":{\"total_tokens\":10}}\n\ndata: [DONE]\n\n"
+        return ": PROCESSING\n\n" + events.joined() + "data: {\"choices\":[],\"usage\":{\"total_tokens\":10}}\n\ndata: [DONE]\n\n"
     }
 
     @Test func streamsWordsAndReportsProgress() async throws {
@@ -55,9 +56,14 @@ struct DictionaryGeneratorTests {
         let schema = try #require((format["json_schema"] as? [String: Any])?["schema"] as? [String: Any])
         let wordsSchema = try #require((schema["properties"] as? [String: Any])?["words"] as? [String: Any])
 
-        #expect(json["model"] as? String == "openai/gpt-5.6-luna")
+        let request = try #require(StubURLProtocol.lastRequest.withLock { $0 })
+
+        #expect(request.url?.absoluteString == "https://llm.example.com/v1/chat/completions")
+        #expect(request.value(forHTTPHeaderField: "Authorization") == "Bearer test-key")
+        #expect(json["model"] as? String == "test-model")
         #expect(json["stream"] as? Bool == true)
-        #expect((json["reasoning"] as? [String: Any])?["effort"] as? String == "minimal")
+        // Only standard Chat Completions fields, so any OpenAI-compatible server accepts the request.
+        #expect(Set(json.keys) == ["model", "messages", "response_format", "stream"])
         #expect(wordsSchema["minItems"] as? Int == 4)
         #expect(((json["messages"] as? [[String: Any]])?.last?["content"] as? String)?.contains("Board games") == true)
     }
@@ -95,15 +101,39 @@ struct DictionaryGeneratorTests {
         }
     }
 
-    @Test func requiresAPIKeyAndTopic() async {
+    @Test func requiresCompleteConfigurationAndTopic() async {
         let generator = makeGenerator(status: 200, body: "")
+        let incomplete: [(LLMConfiguration, LLMError)] = [
+            (LLMConfiguration(baseURL: "", apiKey: "k", model: "m"), .missingBaseURL),
+            (LLMConfiguration(baseURL: "api.example.com", apiKey: "k", model: "m"), .invalidBaseURL),
+            (LLMConfiguration(baseURL: "https://api.example.com/v1", apiKey: "", model: "m"), .missingAPIKey),
+            (LLMConfiguration(baseURL: "https://api.example.com/v1", apiKey: "k", model: ""), .missingModel),
+        ]
 
-        await #expect(throws: DictionaryGenerationError.service(.missingAPIKey)) {
-            try await generator.generate(topic: "x", wordCount: 2, configuration: OpenRouterConfiguration(apiKey: "", model: "m")) { _ in }
+        for (configuration, error) in incomplete {
+            await #expect(throws: DictionaryGenerationError.service(error)) {
+                try await generator.generate(topic: "x", wordCount: 2, configuration: configuration) { _ in }
+            }
         }
+        #expect(StubURLProtocol.lastRequest.withLock { $0 } == nil)
         await #expect(throws: DictionaryGenerationError.emptyTopic) {
             try await generator.generate(topic: "  \n", wordCount: 2, configuration: configuration) { _ in }
         }
+    }
+
+    @Test(arguments: [
+        ("https://api.openai.com/v1", "https://api.openai.com/v1/chat/completions"),
+        ("https://api.openai.com/v1/", "https://api.openai.com/v1/chat/completions"),
+        ("http://localhost:11434/v1", "http://localhost:11434/v1/chat/completions"),
+        ("https://openrouter.ai/api/v1/chat/completions", "https://openrouter.ai/api/v1/chat/completions"),
+    ])
+    func resolvesChatCompletionsEndpoint(baseURL: String, expected: String) {
+        #expect(LLMConfiguration(baseURL: baseURL, apiKey: "k", model: "m").endpoint?.absoluteString == expected)
+    }
+
+    @Test(arguments: ["api.openai.com/v1", "ftp://example.com", "https://", "not a url"])
+    func rejectsInvalidBaseURL(baseURL: String) {
+        #expect(LLMConfiguration(baseURL: baseURL, apiKey: "k", model: "m").issues == [.invalidBaseURL])
     }
 
     @Test func targetWordCountScalesWithPlayers() {
@@ -115,12 +145,14 @@ struct DictionaryGeneratorTests {
 final class StubURLProtocol: URLProtocol {
     nonisolated static let response = Mutex<(status: Int, body: Data)>((200, Data()))
     nonisolated static let lastRequestBody = Mutex<Data?>(nil)
+    nonisolated static let lastRequest = Mutex<URLRequest?>(nil)
 
     override static func canInit(with request: URLRequest) -> Bool { true }
     override static func canonicalRequest(for request: URLRequest) -> URLRequest { request }
 
     override func startLoading() {
         Self.lastRequestBody.withLock { $0 = request.httpBodyStream.map(Self.read) ?? request.httpBody }
+        Self.lastRequest.withLock { $0 = request }
         let (status, body) = Self.response.withLock { $0 }
         let response = HTTPURLResponse(url: request.url!, statusCode: status, httpVersion: "HTTP/1.1", headerFields: nil)!
         client?.urlProtocol(self, didReceive: response, cacheStoragePolicy: .notAllowed)

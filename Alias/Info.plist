@@ -2,6 +2,14 @@
 <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
 <plist version="1.0">
 <dict>
+	<key>NSAppTransportSecurity</key>
+	<dict>
+		<!-- Lets players point AI dictionaries at a self-hosted server (e.g. Ollama) on their LAN over http. Internet hosts still require HTTPS. -->
+		<key>NSAllowsLocalNetworking</key>
+		<true/>
+	</dict>
+	<key>NSLocalNetworkUsageDescription</key>
+	<string>Alias connects to the AI server you set in Settings when it is on your local network.</string>
 	<key>UIAppFonts</key>
 	<array>
 		<string>Base.ttf</string> <!-- PostScript name: WDXLLubrifontTC-Regular -->

@@ -3,6 +3,7 @@
 // MARK: - Common
 "common.cancel" = "Отмена";
 "common.close" = "Закрыть";
+"common.back" = "Назад";
 "common.save" = "Сохранить";
 "common.continue" = "Продолжить";
 "common.exit" = "Выход";
@@ -36,24 +37,35 @@
 "dictionary.create.generating" = "Генерация слов...";
 "dictionary.create.example" = "(например, \"Известные фразы из Теории большого взрыва\")";
 "dictionary.create.generate" = "Генерировать";
-"dictionary.create.words" = "слов";
+"dictionary.create.progress" = "%1$d / %2$d слов";
 "dictionary.create.failed" = "Не удалось сгенерировать";
 "dictionary.create.error.empty_topic" = "Сначала опишите тему.";
-"dictionary.create.error.missing_api_key" = "Добавьте свой ключ OpenRouter API в настройках на главном экране.";
+"dictionary.create.error.missing_api_key" = "Добавьте ключ API в настройках на главном экране.";
+"dictionary.create.error.missing_base_url" = "Добавьте базовый URL API в настройках на главном экране.";
+"dictionary.create.error.invalid_base_url" = "Базовый URL API в настройках недействителен. Укажите полный адрес, например https://api.openai.com/v1.";
+"dictionary.create.error.missing_model" = "Добавьте название модели в настройках на главном экране.";
 "dictionary.create.error.invalid_response" = "Модель вернула неожиданный ответ. Попробуйте ещё раз или выберите другую модель.";
-"dictionary.create.error.request_failed" = "Запрос к OpenRouter не удался (статус %d).";
+"dictionary.create.error.request_failed" = "Запрос к сервису ИИ не удался (статус %d).";
 "dictionary.create.error.too_few_words" = "Сгенерировано только %1$d слов, нужно минимум %2$d. Попробуйте более широкую тему.";
 
 // MARK: - Settings
 "settings.language" = "Язык";
 "settings.sound" = "Звук";
 "settings.vibration" = "Вибрация";
-"settings.openrouter" = "OpenRouter";
-"settings.openrouter_api_key" = "Ключ API OpenRouter";
-"settings.openrouter_api_key_placeholder" = "Ключ API";
-"settings.openrouter_model" = "Модель OpenRouter";
-"settings.openrouter_model_placeholder" = "Модель, например openai/gpt-5.6-luna";
-"settings.openrouter_help" = "Используется только для генерации словарей ИИ. Ключ сохраняется в Keychain на этом устройстве.";
+"settings.llm.title" = "Словари ИИ";
+"settings.llm.subtitle" = "Любой OpenAI-совместимый API: OpenAI, OpenRouter, Groq, Ollama и другие.";
+"settings.llm.status_ready" = "Готово";
+"settings.llm.status_incomplete" = "Не настроено";
+"settings.llm.base_url" = "Базовый URL";
+"settings.llm.base_url_placeholder" = "https://api.openai.com/v1";
+"settings.llm.base_url_invalid" = "Введите полный адрес, начинающийся с https://";
+"settings.llm.api_key" = "Ключ API";
+"settings.llm.api_key_placeholder" = "sk-…";
+"settings.llm.show_api_key" = "Показать ключ API";
+"settings.llm.hide_api_key" = "Скрыть ключ API";
+"settings.llm.model" = "Модель";
+"settings.llm.model_placeholder" = "напр. gpt-4.1-mini";
+"settings.llm.help" = "Используется только для создания собственных словарей. Ключ API хранится в Keychain на этом устройстве.";
 "settings.round_time" = "Время раунда";
 "settings.points_to_win" = "Очков для победы";
 "settings.points_for_guessed" = "Очков за угаданное слово";
@@ -61,15 +73,18 @@
 "settings.last_word_bonus" = "Бонус за последнее слово";
 "settings.bonus_points" = "Бонусные очки:";
 "settings.bonus" = "бонус";
+"settings.points_unit" = "очки";
+"settings.penalty_unit" = "штраф";
+"settings.seconds_format" = "%d с";
 
 // MARK: - Turn Start Confirm Screen
 "turn_start.lets_go" = "Поехали!";
 "turn_start.how_to_play" = "Как играть";
 "turn_start.instruction_1" = "Объясняющий описывает слово, не произнося его";
 "turn_start.instruction_2" = "Отгадывающий пытается угадать слово";
-"turn_start.instruction_3" = "Смахните вправо/вверх, если угадали, влево/вниз, чтобы пропустить";
+"turn_start.instruction_3" = "Смахните вверх, если слово угадали, вниз — чтобы пропустить";
 "turn_start.instruction_4" = "Наберите как можно больше очков до истечения времени";
-"turn_start.round" = "Раунд";
+"turn_start.round_number" = "Раунд %d";
 "turn_start.turn_of" = "Ход %d из %d";
 
 // MARK: - Gameplay Screen
@@ -79,7 +94,7 @@
 "gameplay.exit_title" = "Выйти из игры?";
 "gameplay.exit_message" = "Вы уверены, что хотите выйти? Ваш прогресс будет потерян.";
 "gameplay.last_word_bonus" = "Бонус за последнее слово!";
-"gameplay.who_gets_points" = "Кто получает +%d очков?";
+"gameplay.who_gets_points" = "Кто получает бонус +%d?";
 "gameplay.no_more_words" = "Слова закончились!";
 "gameplay.pool_exhausted" = "Словарь исчерпан. Ход сейчас завершится.";
 
@@ -101,3 +116,6 @@
 "accessibility.next" = "Далее";
 "accessibility.play" = "Играть";
 "accessibility.pause" = "Пауза";
+"accessibility.open_game_settings" = "Открыть настройки игры";
+"accessibility.close_game_settings" = "Закрыть настройки игры";
+"accessibility.remove_player" = "Удалить %@";
