@@ -5,6 +5,7 @@ nonisolated enum L {
     // MARK: - Common
 
     static var cancel: String { localized("common.cancel") }
+    static var close: String { localized("common.close") }
     static var save: String { localized("common.save") }
     static var `continue`: String { localized("common.continue") }
     static var exit: String { localized("common.exit") }

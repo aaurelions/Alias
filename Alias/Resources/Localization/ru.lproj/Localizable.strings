@@ -2,6 +2,7 @@
 
 // MARK: - Common
 "common.cancel" = "Отмена";
+"common.close" = "Закрыть";
 "common.save" = "Сохранить";
 "common.continue" = "Продолжить";
 "common.exit" = "Выход";

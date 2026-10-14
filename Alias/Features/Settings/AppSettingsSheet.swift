@@ -5,17 +5,24 @@ struct AppSettingsSheet: View {
     @Environment(AppSettings.self) private var settings
 
     var body: some View {
+        BottomSheet(isPresented: $isPresented) {
+            // Size to the content when it fits; scroll only on small screens.
+            ViewThatFits(in: .vertical) {
+                rows
+                ScrollView(showsIndicators: false) { rows }
+                    .scrollDismissesKeyboard(.interactively)
+            }
+        }
+    }
+
+    private var rows: some View {
         @Bindable var settings = settings
 
-        BottomSheet(isPresented: $isPresented) {
-            ScrollView(showsIndicators: false) {
-                VStack(spacing: 24) {
-                    LanguageSelector(selectedLanguage: $settings.language)
-                    SoundToggleRow(isEnabled: $settings.soundEnabled)
-                    VibrationToggleRow(isEnabled: $settings.vibrationEnabled)
-                    OpenRouterSettingsSection(apiKey: $settings.openRouterAPIKey, modelName: $settings.openRouterModel)
-                }
-            }
+        return VStack(spacing: 24) {
+            LanguageSelector(selectedLanguage: $settings.language)
+            SoundToggleRow(isEnabled: $settings.soundEnabled)
+            VibrationToggleRow(isEnabled: $settings.vibrationEnabled)
+            OpenRouterSettingsSection(apiKey: $settings.openRouterAPIKey, modelName: $settings.openRouterModel)
         }
     }
 }

@@ -33,52 +33,69 @@ struct BottomSheet<Content: View>: View {
     }
 
     var body: some View {
-        GeometryReader { _ in
+        GeometryReader { geometry in
             ZStack(alignment: .bottom) {
                 if allowsDismiss {
                     Color.clear
                         .contentShape(Rectangle())
                         .ignoresSafeArea()
-                        .onTapGesture {
-                            withAnimation(.spring(response: 0.6, dampingFraction: 0.7)) {
-                                isPresented = false
-                            }
-                        }
+                        .onTapGesture(perform: dismiss)
                 }
 
                 VStack(spacing: 0) {
                     if showsHandle {
                         BottomSheetHandle()
                             .padding(.top, 12)
+                            .padding(.bottom, 12)
+                            .frame(maxWidth: .infinity)
+                            .contentShape(Rectangle())
+                            // The handle always wins the drag, even when the content scrolls.
+                            .highPriorityGesture(dragToDismiss)
+                            .accessibilityElement()
+                            .accessibilityAddTraits(.isButton)
+                            .accessibilityAction(named: Text(L.close), dismiss)
                     }
 
                     content
                         .padding(.horizontal, 20)
-                        .padding(.top, showsHandle ? 12 : 20)
+                        .padding(.top, showsHandle ? 0 : 20)
                         .padding(.bottom, 40)
                 }
                 .background(backgroundColor)
                 .clipShape(RoundedRectangle(cornerRadius: cornerRadius))
                 .offset(y: dragOffset)
-                .gesture(
-                    allowsDismiss ?
-                        DragGesture()
-                        .updating($dragOffset) { value, state, _ in
-                            state = max(0, value.translation.height)
-                        }
-                        .onEnded { value in
-                            if value.translation.height > dismissThreshold {
-                                isPresented = false
-                            }
-                        }
-                        : nil
-                )
+                .gesture(dragToDismiss)
+                // Never cover the whole screen so the backdrop stays tappable.
+                .padding(.top, geometry.size.height * (1 - maxHeightFraction))
             }
         }
         .ignoresSafeArea()
         .transition(.move(edge: .bottom))
         .animation(.spring(response: 0.4, dampingFraction: 0.85), value: isPresented)
         .animation(.interactiveSpring(), value: dragOffset)
+    }
+
+    private var maxHeightFraction: CGFloat { 0.85 }
+
+    private var dragToDismiss: some Gesture {
+        DragGesture()
+            .updating($dragOffset) { value, state, _ in
+                guard allowsDismiss else { return }
+                state = max(0, value.translation.height)
+            }
+            .onEnded { value in
+                guard allowsDismiss else { return }
+                if value.translation.height > dismissThreshold || value.predictedEndTranslation.height > dismissThreshold * 2 {
+                    dismiss()
+                }
+            }
+    }
+
+    private func dismiss() {
+        guard allowsDismiss else { return }
+        withAnimation(.spring(response: 0.6, dampingFraction: 0.7)) {
+            isPresented = false
+        }
     }
 }
 
