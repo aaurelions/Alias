@@ -29,17 +29,12 @@ Alias is a SwiftUI party word game for iPhone and iPad. Players take turns expla
 The app does not store an API key in source code. Each player can enter their own OpenRouter API key and model in the in-app settings sheet from the home screen. The API key is saved in Keychain on that device, and the model name defaults to:
 
 ```text
-google/gemini-3.1-flash-lite
+openai/gpt-5.6-luna
 ```
 
-For local development, the API service also supports these fallbacks when no key is saved in settings:
+For local development you can instead set `OPENROUTER_API_KEY` in the Xcode scheme environment; it is used only when no key is saved in settings.
 
-1. Set the `OPENROUTER_API_KEY` environment variable in the Xcode scheme.
-2. Add an `OpenRouterAPIKey` value to the app Info.plist locally. Do not commit private keys.
-
-Custom dictionary generation uses OpenRouter chat completions with streaming enabled.
-
-If no key is available, the generation modal shows an error instead of freezing or creating mock data.
+Generation streams an OpenRouter chat completion with a strict JSON schema and minimal reasoning effort. Words are parsed incrementally as they arrive, de-duplicated, and the dialog shows live progress. The list size is `max(300, players × 100)`; a result with fewer than half of the requested words is rejected with a readable error. Generated dictionaries live in memory for the current game setup and are never written to disk.
 
 ## Release Hygiene
 
@@ -47,27 +42,45 @@ The repository ignores Xcode user data, build products, local environment files,
 
 ## Project Structure
 
-- `Alias/AliasApp.swift`: app entry point and root navigation.
-- `Alias/Core`: API, localization, constants, theme, and navigation helpers.
-- `Alias/Managers`: game state, dictionary generation, players, settings, words, animation, and feedback.
-- `Alias/Models`: game data models.
-- `Alias/ViewModels`: screen view models.
-- `Alias/Views`: SwiftUI screens and reusable components.
+- `Alias/App`: app entry point, root view, and `AppRouter` (typed navigation path).
+- `Alias/Game`: `GameSession`, the observable game state machine (turn order, scoring, undo of the last turn).
+- `Alias/Models`: value types for players, settings, turns, dictionaries, and languages.
+- `Alias/Services`: OpenRouter client and dictionary generator, settings and Keychain storage, feedback, built-in word lists.
+- `Alias/Features`: one folder per screen (Splash, Home, Settings, NewGame, TurnStart, Gameplay, TurnResults, Winner).
+- `Alias/Shared`: reusable SwiftUI components and preview support.
+- `Alias/Core`: localization accessors, theme, and constants.
 - `Alias/Resources`: assets, fonts, and localization files.
-- `AliasTests`: unit tests.
-- `docs/screenshots`: README screenshots.
-- `.github/workflows/tests.yml`: GitHub Actions test workflow.
+- `AliasTests`: Swift Testing suites.
+
+## Navigation
+
+Home is the root of the `NavigationStack`. New Game is pushed on top of it, and each in-game screen replaces the screen above New Game, so the stack is always `[newGame, current]` during a game:
+
+```text
+Home → New Game → Turn Start → Gameplay → Turn Results → Turn Start … → Winner
+```
+
+- Back on the first Turn Start returns to New Game with the setup intact.
+- Back on a later Turn Start reopens the previous turn's results (`GameSession.returnToLastTurn()`), including across a round boundary, without double-scoring.
+- Leaving Gameplay through the home button or Winner → Home clears the stack; Winner → Again restarts with the same players.
 
 ## Build
 
 ```sh
-xcodebuild build -project "Alias.xcodeproj" -scheme "Alias" -destination 'platform=iOS Simulator,name=iPhone 17,OS=26.5'
+xcodebuild build -project "Alias.xcodeproj" -scheme "Alias" -destination 'platform=iOS Simulator,name=iPhone 17'
 ```
 
 ## Test
 
 ```sh
-xcodebuild test -project "Alias.xcodeproj" -scheme "Alias" -destination 'platform=iOS Simulator,name=iPhone 17,OS=26.5' -only-testing:AliasTests
+xcodebuild test -project "Alias.xcodeproj" -scheme "Alias" -destination 'platform=iOS Simulator,name=iPhone 17' -only-testing:AliasTests
+```
+
+`OpenRouterLiveTests` calls the real API and runs only when a key is passed to the test runner:
+
+```sh
+TEST_RUNNER_OPENROUTER_API_KEY=sk-or-... TEST_RUNNER_OPENROUTER_MODEL=openai/gpt-5.6-luna \
+  xcodebuild test -project "Alias.xcodeproj" -scheme "Alias" -destination 'platform=iOS Simulator,name=iPhone 17' -only-testing:AliasTests/OpenRouterLiveTests
 ```
 
 If the simulator service is unhealthy, reboot the selected simulator and rerun the command.

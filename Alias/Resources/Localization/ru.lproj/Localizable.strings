@@ -23,8 +23,6 @@
 "player.edit.title" = "Редактировать игрока";
 "player.edit.name_label" = "Имя игрока";
 "player.edit.choose_icon" = "Выбрать иконку";
-"player.guesser" = "Отгадывающий";
-"player.explainer" = "Объясняющий";
 "player.default_name" = "Игрок %d";
 
 // MARK: - Dictionary
@@ -39,6 +37,11 @@
 "dictionary.create.generate" = "Генерировать";
 "dictionary.create.words" = "слов";
 "dictionary.create.failed" = "Не удалось сгенерировать";
+"dictionary.create.error.empty_topic" = "Сначала опишите тему.";
+"dictionary.create.error.missing_api_key" = "Добавьте свой ключ OpenRouter API в настройках на главном экране.";
+"dictionary.create.error.invalid_response" = "Модель вернула неожиданный ответ. Попробуйте ещё раз или выберите другую модель.";
+"dictionary.create.error.request_failed" = "Запрос к OpenRouter не удался (статус %d).";
+"dictionary.create.error.too_few_words" = "Сгенерировано только %1$d слов, нужно минимум %2$d. Попробуйте более широкую тему.";
 
 // MARK: - Settings
 "settings.language" = "Язык";
@@ -48,7 +51,7 @@
 "settings.openrouter_api_key" = "Ключ API OpenRouter";
 "settings.openrouter_api_key_placeholder" = "Ключ API";
 "settings.openrouter_model" = "Модель OpenRouter";
-"settings.openrouter_model_placeholder" = "Модель, например google/gemini-3.1-flash-lite";
+"settings.openrouter_model_placeholder" = "Модель, например openai/gpt-5.6-luna";
 "settings.openrouter_help" = "Используется только для генерации словарей ИИ. Ключ сохраняется в Keychain на этом устройстве.";
 "settings.round_time" = "Время раунда";
 "settings.points_to_win" = "Очков для победы";
@@ -88,24 +91,12 @@
 
 // MARK: - Winner Screen
 "winner.its_a_tie" = "Ничья!";
-"winner.wins" = "Победа!";
-"winner.final_scores" = "Финальный счёт";
-
-// MARK: - Time Units
-"time.seconds_short" = "с";
-"time.minutes_short" = "м";
 
 // MARK: - Roles
 "role.guesser" = "Отгадывающий";
 "role.explainer" = "Объясняющий";
 
-// MARK: - Points
-"points.plus" = "+%d";
-"points.minus" = "-%d";
-
 // MARK: - Accessibility
-"accessibility.close" = "Закрыть";
-"accessibility.back" = "Назад";
 "accessibility.next" = "Далее";
 "accessibility.play" = "Играть";
 "accessibility.pause" = "Пауза";

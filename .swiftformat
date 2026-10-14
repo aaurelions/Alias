@@ -1,0 +1,5 @@
+--swiftversion 6.0
+--indent 4
+--maxwidth none
+--disable wrapMultilineStatementBraces,hoistPatternLet,andOperator,numberFormatting,enumNamespaces,extensionAccessControl,wrapLoopBodies,unusedArguments
+--exclude .build,DerivedData,build

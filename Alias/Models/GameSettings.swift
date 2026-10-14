@@ -1,25 +1,28 @@
 import Foundation
 
-/// Game configuration settings
-struct GameSettings {
-    var selectedRoundTime: Int = 60
-    var selectedPointsToWin: Int = 50
-    var guesserPoints: Int = 6
-    var explainerPoints: Int = 4
-    var guesserPenalty: Int = -3
-    var explainerPenalty: Int = -2
-    var lastWordBonusEnabled: Bool = true
-    var lastWordBonusPoints: Int = 7
+struct GameSettings: Equatable, Sendable {
+    var roundTime = 60
+    var pointsToWin = 50
+    var guesserPoints = 6
+    var explainerPoints = 4
+    var guesserPenalty = -3
+    var explainerPenalty = -2
+    var lastWordBonusEnabled = true
+    var lastWordBonusPoints = 7
+
+    func score(for results: [WordResult], bonusPlayerID: UUID?) -> TurnScore {
+        let guessed = results.count { $0.isGuessed }
+        let penalized = results.count { !$0.isGuessed && !$0.isLastWord }
+        return TurnScore(
+            explainer: guessed * explainerPoints + penalized * explainerPenalty,
+            guesser: guessed * guesserPoints + penalized * guesserPenalty,
+            bonus: bonusPlayerID == nil ? 0 : lastWordBonusPoints
+        )
+    }
 }
 
-/// UI state for the new game screen
-struct UIState {
-    var players: [Player] = []
-    var dictionaries: [WordDictionary] = .initialGameDictionaries
-    var selectedDictionaryIndex: Int? = 1
-    var playerToEdit: Player?
-    var showEditPlayerAlert: Bool = false
-    var showCreateDictionaryAlert: Bool = false
-    var isAdvancedSettingsExpanded: Bool = false
-    var isGameStarted: Bool = false
+struct TurnScore: Hashable, Sendable {
+    var explainer: Int
+    var guesser: Int
+    var bonus: Int
 }

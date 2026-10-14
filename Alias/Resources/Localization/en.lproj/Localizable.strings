@@ -23,8 +23,6 @@
 "player.edit.title" = "Edit Player";
 "player.edit.name_label" = "Player Name";
 "player.edit.choose_icon" = "Choose Icon";
-"player.guesser" = "Guesser";
-"player.explainer" = "Explainer";
 "player.default_name" = "Player %d";
 
 // MARK: - Dictionary
@@ -39,6 +37,11 @@
 "dictionary.create.generate" = "Generate";
 "dictionary.create.words" = "words";
 "dictionary.create.failed" = "Generation failed";
+"dictionary.create.error.empty_topic" = "Describe a topic first.";
+"dictionary.create.error.missing_api_key" = "Add your OpenRouter API key in Settings on the home screen.";
+"dictionary.create.error.invalid_response" = "The model returned an unexpected response. Try again or choose another model.";
+"dictionary.create.error.request_failed" = "OpenRouter request failed (status %d).";
+"dictionary.create.error.too_few_words" = "Only %1$d words were generated, at least %2$d are needed. Try a broader topic.";
 
 // MARK: - Settings
 "settings.language" = "Language";
@@ -48,7 +51,7 @@
 "settings.openrouter_api_key" = "OpenRouter API Key";
 "settings.openrouter_api_key_placeholder" = "API key";
 "settings.openrouter_model" = "OpenRouter Model";
-"settings.openrouter_model_placeholder" = "Model, e.g. google/gemini-3.1-flash-lite";
+"settings.openrouter_model_placeholder" = "Model, e.g. openai/gpt-5.6-luna";
 "settings.openrouter_help" = "Used only for AI dictionary generation. The key is saved in Keychain on this device.";
 "settings.round_time" = "Round Time";
 "settings.points_to_win" = "Points to Win";
@@ -88,24 +91,12 @@
 
 // MARK: - Winner Screen
 "winner.its_a_tie" = "It's a Tie!";
-"winner.wins" = "Wins!";
-"winner.final_scores" = "Final Scores";
-
-// MARK: - Time Units
-"time.seconds_short" = "s";
-"time.minutes_short" = "m";
 
 // MARK: - Roles
 "role.guesser" = "Guesser";
 "role.explainer" = "Explainer";
 
-// MARK: - Points
-"points.plus" = "+%d";
-"points.minus" = "-%d";
-
 // MARK: - Accessibility
-"accessibility.close" = "Close";
-"accessibility.back" = "Back";
 "accessibility.next" = "Next";
 "accessibility.play" = "Play";
 "accessibility.pause" = "Pause";

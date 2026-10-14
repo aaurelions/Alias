@@ -23,8 +23,6 @@
 "player.edit.title" = "Редагувати гравця";
 "player.edit.name_label" = "Ім'я гравця";
 "player.edit.choose_icon" = "Вибрати іконку";
-"player.guesser" = "Відгадувач";
-"player.explainer" = "Пояснювач";
 "player.default_name" = "Гравець %d";
 
 // MARK: - Dictionary
@@ -39,6 +37,11 @@
 "dictionary.create.generate" = "Генерувати";
 "dictionary.create.words" = "слів";
 "dictionary.create.failed" = "Не вдалося згенерувати";
+"dictionary.create.error.empty_topic" = "Спочатку опишіть тему.";
+"dictionary.create.error.missing_api_key" = "Додайте свій ключ OpenRouter API у налаштуваннях на головному екрані.";
+"dictionary.create.error.invalid_response" = "Модель повернула неочікувану відповідь. Спробуйте ще раз або оберіть іншу модель.";
+"dictionary.create.error.request_failed" = "Запит до OpenRouter не вдався (статус %d).";
+"dictionary.create.error.too_few_words" = "Згенеровано лише %1$d слів, потрібно щонайменше %2$d. Спробуйте ширшу тему.";
 
 // MARK: - Settings
 "settings.language" = "Мова";
@@ -48,7 +51,7 @@
 "settings.openrouter_api_key" = "Ключ API OpenRouter";
 "settings.openrouter_api_key_placeholder" = "Ключ API";
 "settings.openrouter_model" = "Модель OpenRouter";
-"settings.openrouter_model_placeholder" = "Модель, наприклад google/gemini-3.1-flash-lite";
+"settings.openrouter_model_placeholder" = "Модель, наприклад openai/gpt-5.6-luna";
 "settings.openrouter_help" = "Використовується лише для генерації словників ШІ. Ключ зберігається в Keychain на цьому пристрої.";
 "settings.round_time" = "Час раунду";
 "settings.points_to_win" = "Очок для перемоги";
@@ -88,24 +91,12 @@
 
 // MARK: - Winner Screen
 "winner.its_a_tie" = "Нічия!";
-"winner.wins" = "Перемога!";
-"winner.final_scores" = "Фінальний рахунок";
-
-// MARK: - Time Units
-"time.seconds_short" = "с";
-"time.minutes_short" = "хв";
 
 // MARK: - Roles
 "role.guesser" = "Відгадувач";
 "role.explainer" = "Пояснювач";
 
-// MARK: - Points
-"points.plus" = "+%d";
-"points.minus" = "-%d";
-
 // MARK: - Accessibility
-"accessibility.close" = "Закрити";
-"accessibility.back" = "Назад";
 "accessibility.next" = "Далі";
 "accessibility.play" = "Грати";
 "accessibility.pause" = "Пауза";
